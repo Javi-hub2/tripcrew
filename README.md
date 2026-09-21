@@ -7,6 +7,47 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## TripCrew
+
+TripCrew is een schoolreis-applicatie waarmee reizigers zich registreren, zich inschrijven
+voor een reis en hun dagprogramma bekijken, en waarmee coördinatoren reizen beheren en
+inschrijvingen goedkeuren of afwijzen.
+
+### Herleidbaarheid eisen → code
+
+| Eis | Waar |
+|---|---|
+| Zelfregistratie | `Auth/RegisterController`, `RegisterRequest`, `Mail/ActivationMail`, `auth/register.blade.php` |
+| Inschrijven voor een reis | `TripRegistrationController`, `traveler/register-trip.blade.php` |
+| Goedkeuring door coördinator | `Coordinator/RegistrationController`, `coordinator/registrations/index.blade.php` |
+| Wachtwoordherstel | `Auth/PasswordResetController`, `Notifications/ResetPasswordNotification` |
+
+### Ontwerpkeuzes die niet letterlijk in de briefing stonden
+
+- `trip_user` heeft een statusveld (`pending`/`approved`/`rejected`) met `requested_at`,
+  `decided_at` en `decided_by`. De koppeling reiziger–reis is daarmee een aanvraag met
+  werkstroom in plaats van een directe koppeling. Neem dit op in het technisch ontwerp.
+- Zelfregistratie is toegevoegd; de ERD ging uit van accounts die de coördinator aanmaakt.
+  Wie zich zelf registreert krijgt altijd de rol `reiziger`.
+- Voor Gmail-bezorging is een app-wachtwoord nodig (Google-account → Beveiliging →
+  App-wachtwoorden, vereist tweestapsverificatie). Een schoolaccount op Microsoft 365
+  blokkeert SMTP en werkt hier niet voor.
+- De maillayout wordt gebruikt via `<x-app-mail::layout>` en niet `<x-mail::layout>`; het
+  voorvoegsel `mail` is bij Laravel gereserveerd voor het ingebouwde markdown-mailsysteem
+  en wordt daardoor tijdens het renderen van zo'n mail overschreven.
+- Bij registratie wordt altijd een wachtwoordhash berekend, ook wanneer het e-mailadres al
+  bestaat en er dus niets wordt opgeslagen. Dat is bewust: zonder dat rekenwerk verraadt de
+  responstijd of een adres al een account heeft.
+
+### Wat er nog open staat
+
+- Het Gmail app-wachtwoord moet nog in `.env` worden gezet en `MAIL_MAILER` op `smtp`.
+  Zolang dat niet gebeurd is, komen mails in `storage/logs/laravel.log`.
+- Zodra echte SMTP-bezorging aan staat, duurt het registratieverzoek voor een nieuw adres
+  merkbaar langer dan voor een bestaand adres, omdat alleen dan een mail over het netwerk
+  gaat. Wie dat verschil wil wegnemen, moet de mails in een wachtrij zetten (`ShouldQueue`
+  op de Mailable plus een draaiende `artisan queue:work`).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
