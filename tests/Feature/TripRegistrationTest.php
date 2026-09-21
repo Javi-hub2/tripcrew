@@ -55,4 +55,70 @@ class TripRegistrationTest extends TestCase
             ->post(route('activities.choose', $activity))
             ->assertForbidden();
     }
+
+    public function test_traveler_can_register_for_a_trip(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+
+        $this->actingAs($traveler)
+            ->post(route('traveler.registrations.store', $trip))
+            ->assertRedirect(route('traveler.registrations.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Pending->value,
+        ]);
+    }
+
+    public function test_traveler_can_register_for_multiple_trips(): void
+    {
+        $traveler = User::factory()->create();
+        $first = Trip::factory()->create();
+        $second = Trip::factory()->create();
+
+        $this->actingAs($traveler)->post(route('traveler.registrations.store', $first));
+        $this->actingAs($traveler)->post(route('traveler.registrations.store', $second));
+
+        $this->assertSame(2, $traveler->trips()->count());
+    }
+
+    public function test_registering_twice_does_not_create_a_second_row(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+
+        $this->actingAs($traveler)->post(route('traveler.registrations.store', $trip));
+        $this->actingAs($traveler)
+            ->post(route('traveler.registrations.store', $trip))
+            ->assertSessionHas('error');
+
+        $this->assertSame(1, $traveler->trips()->count());
+    }
+
+    public function test_rejected_registration_can_be_submitted_again(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Rejected->value]);
+
+        $this->actingAs($traveler)
+            ->post(route('traveler.registrations.store', $trip))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Pending->value,
+        ]);
+    }
+
+    public function test_coordinator_cannot_use_the_traveler_registration_screen(): void
+    {
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->get(route('traveler.registrations.index'))
+            ->assertForbidden();
+    }
 }

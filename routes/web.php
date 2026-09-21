@@ -9,6 +9,7 @@ use App\Http\Controllers\Coordinator\ParticipantController;
 use App\Http\Controllers\Coordinator\TripController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TravelerProgramController;
+use App\Http\Controllers\TripRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 // --- Auth (FE-01, FE-02) ---
@@ -27,6 +28,9 @@ Route::middleware('auth')->group(function () {
 
     // --- Reiziger (FE-03, FE-04, FE-05) ---
     Route::middleware('role:reiziger')->group(function () {
+        Route::get('/reizen', [TripRegistrationController::class, 'index'])->name('traveler.registrations.index');
+        Route::post('/reizen/{trip}/inschrijven', [TripRegistrationController::class, 'store'])->name('traveler.registrations.store');
+
         Route::prefix('reizen/{trip}')->name('traveler.')->group(function () {
             Route::get('/', [TravelerProgramController::class, 'dashboard'])->name('dashboard');
             Route::get('/activiteiten/{tripDay?}', [TravelerProgramController::class, 'activities'])->name('activities');

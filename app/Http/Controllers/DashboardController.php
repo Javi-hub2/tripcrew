@@ -19,8 +19,7 @@ class DashboardController extends Controller
         $trip = $user->approvedTrips()->first();
 
         if (! $trip) {
-            return redirect()->route('login')
-                ->with('error', 'Je bent nog niet aan een reis gekoppeld. Neem contact op met je reiscoördinator.');
+            return redirect()->route('traveler.registrations.index');
         }
 
         return redirect()->route('traveler.dashboard', $trip);
