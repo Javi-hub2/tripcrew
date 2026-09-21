@@ -36,7 +36,7 @@
                                   onsubmit="return confirm('Weet je zeker dat je deze keuze wilt annuleren?')">
                                 @csrf
                                 @method('DELETE')
-                                <button class="rounded border border-accent px-3 py-1.5 text-sm font-medium text-orange-800 hover:bg-orange-50">
+                                <button class="rounded border border-accent px-3 py-1.5 text-sm font-medium text-accent-dark hover:bg-accent/10">
                                     Annuleer keuze
                                 </button>
                             </form>
@@ -60,7 +60,7 @@
                             @method('PATCH')
                             <button type="submit" class="flex w-full items-center gap-3 rounded px-2 py-1.5 text-left hover:bg-slate-50"
                                     aria-pressed="{{ $item->checked ? 'true' : 'false' }}">
-                                <span class="flex h-5 w-5 items-center justify-center rounded border {{ $item->checked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-400' }}">
+                                <span class="flex h-5 w-5 items-center justify-center rounded border {{ $item->checked ? 'border-success bg-success text-white' : 'border-slate-400' }}">
                                     @if ($item->checked)&#10003;@endif
                                 </span>
                                 <span class="{{ $item->checked ? 'text-slate-500 line-through' : '' }}">{{ $item->label }}</span>

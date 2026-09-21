@@ -57,7 +57,7 @@
 
                 <div class="mt-auto">
                     @if ($chosen)
-                        <p class="flex items-center gap-2 rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                        <p class="flex items-center gap-2 rounded border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
                             <span aria-hidden="true">&#10003;</span> Je hebt deze activiteit gekozen
                         </p>
                     @elseif ($deadlinePassed || $full)
@@ -65,7 +65,7 @@
                                 class="w-full cursor-not-allowed rounded bg-slate-200 px-4 py-2 font-medium text-slate-500">
                             Kies deze activiteit
                         </button>
-                        <p class="mt-2 flex items-center gap-2 text-sm text-red-700">
+                        <p class="mt-2 flex items-center gap-2 text-sm text-danger">
                             <span aria-hidden="true">&#10007;</span>
                             {{ $deadlinePassed ? 'Deadline voorbij.' : 'Activiteit vol.' }}
                         </p>

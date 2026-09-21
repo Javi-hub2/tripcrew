@@ -40,7 +40,7 @@
                                           onsubmit="return confirm('Weet je zeker dat je deze reis wilt verwijderen? Alle dagen worden ook verwijderd.')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="text-orange-700 underline">Verwijderen</button>
+                                        <button class="text-danger underline">Verwijderen</button>
                                     </form>
                                 </div>
                             </td>

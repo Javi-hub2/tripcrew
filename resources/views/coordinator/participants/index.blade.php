@@ -31,7 +31,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="h-2 w-24 rounded bg-slate-200">
-                                        <div class="h-2 rounded {{ $p->checklist_percentage === 100 ? 'bg-emerald-600' : 'bg-brand' }}"
+                                        <div class="h-2 rounded {{ $p->checklist_percentage === 100 ? 'bg-success' : 'bg-brand' }}"
                                              style="width: {{ $p->checklist_percentage }}%"></div>
                                     </div>
                                     <span>{{ $p->checklist_percentage }}%</span>

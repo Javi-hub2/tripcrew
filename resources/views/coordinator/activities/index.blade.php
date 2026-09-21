@@ -49,7 +49,7 @@
                                           onsubmit="return confirm('Activiteit verwijderen? Bestaande keuzes vervallen ook.')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="text-orange-700 underline">Verwijderen</button>
+                                        <button class="text-danger underline">Verwijderen</button>
                                     </form>
                                 </div>
                             </td>

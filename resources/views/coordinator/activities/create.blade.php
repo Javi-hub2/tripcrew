@@ -4,7 +4,7 @@
 @section('content')
 <h1 class="mb-4 text-2xl font-semibold text-brand">Activiteit toevoegen – {{ $trip->name }}</h1>
 @if ($days->isEmpty())
-    <div role="alert" class="flex items-center gap-2 rounded-lg border border-accent/40 bg-orange-50 px-4 py-3 text-orange-900">
+    <div role="alert" class="flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-accent-dark">
         <span aria-hidden="true">&#9888;</span> <span>Deze reis heeft nog geen dagen. Controleer de begin- en einddatum.</span>
     </div>
 @else
