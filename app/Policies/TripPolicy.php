@@ -19,8 +19,8 @@ class TripPolicy
             return true;
         }
 
-        // Reiziger mag alleen zijn eigen reis zien.
-        return $user->trips()->whereKey($trip->id)->exists();
+        // Reiziger mag alleen een reis zien waarvoor zijn inschrijving is goedgekeurd.
+        return $user->approvedTrips()->whereKey($trip->id)->exists();
     }
 
     public function create(User $user): bool

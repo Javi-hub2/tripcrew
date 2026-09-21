@@ -16,7 +16,7 @@ class DashboardController extends Controller
             return redirect()->route('coordinator.trips.index');
         }
 
-        $trip = $user->trips()->first();
+        $trip = $user->approvedTrips()->first();
 
         if (! $trip) {
             return redirect()->route('login')

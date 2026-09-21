@@ -17,7 +17,7 @@ class ActivityChoiceTest extends TestCase
     private function travelerOnTrip(Trip $trip): User
     {
         $user = User::factory()->create();
-        $trip->travelers()->attach($user);
+        $trip->registrations()->attach($user, ['status' => \App\Enums\RegistrationStatus::Approved->value]);
 
         return $user;
     }

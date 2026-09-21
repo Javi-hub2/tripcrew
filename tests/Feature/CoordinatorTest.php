@@ -42,7 +42,7 @@ class CoordinatorTest extends TestCase
     public function test_trip_with_participants_cannot_be_deleted(): void
     {
         $trip = Trip::factory()->create();
-        $trip->travelers()->attach(User::factory()->create());
+        $trip->registrations()->attach(User::factory()->create(), ['status' => \App\Enums\RegistrationStatus::Approved->value]);
 
         $this->actingAs(User::factory()->coordinator()->create())
             ->delete(route('coordinator.trips.destroy', $trip))
@@ -76,7 +76,7 @@ class CoordinatorTest extends TestCase
     {
         $trip = Trip::factory()->create();
         $traveler = User::factory()->create();
-        $trip->travelers()->attach($traveler);
+        $trip->registrations()->attach($traveler, ['status' => \App\Enums\RegistrationStatus::Approved->value]);
 
         $this->actingAs($traveler)->get(route('coordinator.trips.index'))->assertForbidden();
         $this->actingAs($traveler)->get(route('coordinator.trips.participants.index', $trip))->assertForbidden();
@@ -87,7 +87,7 @@ class CoordinatorTest extends TestCase
     {
         $trip = Trip::factory()->create();
         $traveler = User::factory()->create(['name' => 'Sam Test']);
-        $trip->travelers()->attach($traveler);
+        $trip->registrations()->attach($traveler, ['status' => \App\Enums\RegistrationStatus::Approved->value]);
         ChecklistItem::factory()->create(['user_id' => $traveler->id, 'trip_id' => $trip->id, 'checked' => true]);
         ChecklistItem::factory()->create(['user_id' => $traveler->id, 'trip_id' => $trip->id, 'checked' => false]);
 

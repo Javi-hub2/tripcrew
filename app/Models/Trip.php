@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RegistrationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -26,9 +27,23 @@ class Trip extends Model
         return $this->hasMany(TripDay::class)->orderBy('date');
     }
 
+    /** Alle inschrijvingen, ongeacht status. Hierop wordt attach() gedaan. */
+    public function registrations(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot(['status', 'requested_at', 'decided_at', 'decided_by'])
+            ->withTimestamps();
+    }
+
+    /** Alleen goedgekeurde deelnemers (FE-08). */
     public function travelers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class);
+        return $this->registrations()->wherePivot('status', RegistrationStatus::Approved->value);
+    }
+
+    public function pendingRegistrations(): BelongsToMany
+    {
+        return $this->registrations()->wherePivot('status', RegistrationStatus::Pending->value);
     }
 
     public function checklistItems(): HasMany

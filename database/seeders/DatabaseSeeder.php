@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
         $others = User::factory()->count(6)->create();
 
         $travelers = $others->push($demo)->push($invited);
-        $trip->travelers()->attach($travelers->pluck('id'));
+        $trip->registrations()->attach($travelers->pluck('id')->all(), ['status' => \App\Enums\RegistrationStatus::Approved->value, 'requested_at' => now(), 'decided_at' => now()]);
 
         foreach ($travelers as $traveler) {
             foreach (['Paspoort gecontroleerd', 'Reisverzekering geregeld', 'Tas ingepakt'] as $label) {
