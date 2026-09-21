@@ -87,9 +87,9 @@ Onder het bestaande `@theme`-blok, zodat Tailwind er klassen als `bg-brand` en `
     --color-brand: #0F766E;
     --color-brand-dark: #115E59;
     --color-sand: #FDF6EC;
-    --color-accent: #EA580C;
-    --color-accent-dark: #C2410C;
-    --color-success: #15803D;
+    --color-accent: #C2410C;
+    --color-accent-dark: #9A3412;
+    --color-success: #166534;
     --color-danger: #B91C1C;
 }
 ```
@@ -1199,7 +1199,7 @@ class ActivationMail extends Mailable
     <p>Hallo {{ $name }},</p>
     <p>Je account voor TripCrew staat klaar. Stel hieronder je eigen wachtwoord in.</p>
     <p style="margin:24px 0;">
-        <a href="{{ $url }}" style="background:#EA580C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
+        <a href="{{ $url }}" style="background:#C2410C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
             Wachtwoord instellen
         </a>
     </p>
@@ -1501,7 +1501,7 @@ De tests gebruiken `ResetPassword::class` in `assertSentTo`; deze klasse erft da
     <p>Hallo {{ $name }},</p>
     <p>Je hebt een nieuw wachtwoord aangevraagd voor TripCrew.</p>
     <p style="margin:24px 0;">
-        <a href="{{ $url }}" style="background:#EA580C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
+        <a href="{{ $url }}" style="background:#C2410C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
             Nieuw wachtwoord instellen
         </a>
     </p>
