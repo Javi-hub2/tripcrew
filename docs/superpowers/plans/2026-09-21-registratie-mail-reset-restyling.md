@@ -1195,7 +1195,7 @@ class ActivationMail extends Mailable
 `resources/views/emails/activation.blade.php`:
 
 ```blade
-<x-mail::layout>
+<x-app-mail::layout>
     <p>Hallo {{ $name }},</p>
     <p>Je account voor TripCrew staat klaar. Stel hieronder je eigen wachtwoord in.</p>
     <p style="margin:24px 0;">
@@ -1204,13 +1204,13 @@ class ActivationMail extends Mailable
         </a>
     </p>
     <p style="font-size:13px;color:#64748B;">Werkt de knop niet? Kopieer deze link naar je browser:<br>{{ $url }}</p>
-</x-mail::layout>
+</x-app-mail::layout>
 ```
 
-De template gebruikt de anonieme component `emails.layout` via `<x-mail::layout>`. Registreer daarvoor de namespace in `app/Providers/AppServiceProvider.php` in `boot()`:
+De template gebruikt de anonieme component `emails.layout` via `<x-app-mail::layout>`. Registreer daarvoor de namespace in `app/Providers/AppServiceProvider.php` in `boot()`:
 
 ```php
-        \Illuminate\Support\Facades\Blade::anonymousComponentNamespace('emails', 'mail');
+        \Illuminate\Support\Facades\Blade::anonymousComponentNamespace('emails', 'app-mail');
 ```
 
 - [ ] **Step 6: Controller schrijven**
@@ -1497,7 +1497,7 @@ De tests gebruiken `ResetPassword::class` in `assertSentTo`; deze klasse erft da
 `resources/views/emails/password-reset.blade.php`:
 
 ```blade
-<x-mail::layout>
+<x-app-mail::layout>
     <p>Hallo {{ $name }},</p>
     <p>Je hebt een nieuw wachtwoord aangevraagd voor TripCrew.</p>
     <p style="margin:24px 0;">
@@ -1508,7 +1508,7 @@ De tests gebruiken `ResetPassword::class` in `assertSentTo`; deze klasse erft da
     <p style="font-size:13px;color:#64748B;">
         Deze link verloopt na {{ $minutes }} minuten. Heb je dit niet aangevraagd, dan hoef je niets te doen.
     </p>
-</x-mail::layout>
+</x-app-mail::layout>
 ```
 
 - [ ] **Step 5: `ResetPasswordRequest` schrijven**

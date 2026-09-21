@@ -1,4 +1,4 @@
-<x-mail::layout>
+<x-app-mail::layout>
     <p>Hallo {{ $name }},</p>
     <p>Je account voor TripCrew staat klaar. Stel hieronder je eigen wachtwoord in.</p>
     <p style="margin:24px 0;">
@@ -7,4 +7,4 @@
         </a>
     </p>
     <p style="font-size:13px;color:#64748B;">Werkt de knop niet? Kopieer deze link naar je browser:<br>{{ $url }}</p>
-</x-mail::layout>
+</x-app-mail::layout>

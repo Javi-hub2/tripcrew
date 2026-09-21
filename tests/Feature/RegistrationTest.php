@@ -73,4 +73,28 @@ class RegistrationTest extends TestCase
             ->get('/registreren')
             ->assertRedirect(route('dashboard'));
     }
+
+    public function test_activation_mail_renders_with_the_activation_link(): void
+    {
+        $user = User::factory()->notActivated()->create();
+
+        $html = (new ActivationMail($user))->render();
+
+        $this->assertStringContainsString($user->activation_token, $html);
+        $this->assertStringContainsString('Wachtwoord instellen', $html);
+        $this->assertStringNotContainsString('password', strtolower(strip_tags($html)));
+    }
+
+    public function test_registering_cannot_set_a_privileged_role(): void
+    {
+        Mail::fake();
+
+        $this->post('/registreren', [
+            'name' => 'Slimme Reiziger',
+            'email' => 'slim@example.test',
+            'role' => 'coordinator',
+        ]);
+
+        $this->assertSame('reiziger', User::where('email', 'slim@example.test')->first()->role);
+    }
 }
