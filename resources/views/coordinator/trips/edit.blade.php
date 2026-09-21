@@ -2,10 +2,14 @@
 @section('title', 'Reis bewerken')
 
 @section('content')
-<h1 class="mb-4 text-2xl font-semibold text-[#0C4A6E]">{{ $trip->name }} bewerken</h1>
+<h1 class="mb-4 text-2xl font-semibold text-brand">{{ $trip->name }} bewerken</h1>
 @include('coordinator._nav')
-<form method="POST" action="{{ route('coordinator.trips.update', $trip) }}" class="max-w-xl space-y-4 rounded-xl bg-white p-6 shadow">
-    @method('PUT')
-    @include('coordinator.trips._form')
+<form method="POST" action="{{ route('coordinator.trips.update', $trip) }}" class="max-w-xl">
+    <x-card>
+        <div class="space-y-4">
+            @method('PUT')
+            @include('coordinator.trips._form')
+        </div>
+    </x-card>
 </form>
 @endsection

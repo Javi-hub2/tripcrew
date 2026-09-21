@@ -3,10 +3,10 @@
 
 @section('content')
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-2xl font-semibold text-[#0C4A6E]">Reizen</h1>
-    <a href="{{ route('coordinator.trips.create') }}" class="rounded bg-[#06B6D4] px-4 py-2 font-medium text-[#0C4A6E] hover:opacity-90">
+    <h1 class="text-2xl font-semibold text-brand">Reizen</h1>
+    <x-button variant="primary" href="{{ route('coordinator.trips.create') }}">
         + Nieuwe reis
-    </a>
+    </x-button>
 </div>
 
 @if ($trips->isEmpty())
@@ -14,39 +14,41 @@
         <span aria-hidden="true">&#8505;</span> <span>Er zijn nog geen reizen aangemaakt.</span>
     </div>
 @else
-    <div class="overflow-x-auto rounded-xl bg-white shadow">
-        <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-left text-slate-600">
-                <tr>
-                    <th class="px-4 py-3">Naam</th>
-                    <th class="px-4 py-3">Periode</th>
-                    <th class="px-4 py-3">Deelnemers</th>
-                    <th class="px-4 py-3"><span class="sr-only">Acties</span></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @foreach ($trips as $trip)
+    <x-card>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 text-left text-slate-600">
                     <tr>
-                        <td class="px-4 py-3 font-medium">{{ $trip->name }}</td>
-                        <td class="px-4 py-3">{{ $trip->start_date->format('d-m-Y') }} – {{ $trip->end_date->format('d-m-Y') }}</td>
-                        <td class="px-4 py-3">{{ $trip->travelers_count }}</td>
-                        <td class="px-4 py-3">
-                            <div class="flex flex-wrap justify-end gap-2">
-                                <a href="{{ route('coordinator.trips.activities.index', $trip) }}" class="text-[#0C4A6E] underline">Activiteiten</a>
-                                <a href="{{ route('coordinator.trips.participants.index', $trip) }}" class="text-[#0C4A6E] underline">Deelnemers</a>
-                                <a href="{{ route('coordinator.trips.edit', $trip) }}" class="text-[#0C4A6E] underline">Bewerken</a>
-                                <form method="POST" action="{{ route('coordinator.trips.destroy', $trip) }}"
-                                      onsubmit="return confirm('Weet je zeker dat je deze reis wilt verwijderen? Alle dagen worden ook verwijderd.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="text-orange-700 underline">Verwijderen</button>
-                                </form>
-                            </div>
-                        </td>
+                        <th class="px-4 py-3">Naam</th>
+                        <th class="px-4 py-3">Periode</th>
+                        <th class="px-4 py-3">Deelnemers</th>
+                        <th class="px-4 py-3"><span class="sr-only">Acties</span></th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach ($trips as $trip)
+                        <tr>
+                            <td class="px-4 py-3 font-medium">{{ $trip->name }}</td>
+                            <td class="px-4 py-3">{{ $trip->start_date->format('d-m-Y') }} – {{ $trip->end_date->format('d-m-Y') }}</td>
+                            <td class="px-4 py-3">{{ $trip->travelers_count }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap justify-end gap-2">
+                                    <a href="{{ route('coordinator.trips.activities.index', $trip) }}" class="text-brand underline">Activiteiten</a>
+                                    <a href="{{ route('coordinator.trips.participants.index', $trip) }}" class="text-brand underline">Deelnemers</a>
+                                    <a href="{{ route('coordinator.trips.edit', $trip) }}" class="text-brand underline">Bewerken</a>
+                                    <form method="POST" action="{{ route('coordinator.trips.destroy', $trip) }}"
+                                          onsubmit="return confirm('Weet je zeker dat je deze reis wilt verwijderen? Alle dagen worden ook verwijderd.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="text-orange-700 underline">Verwijderen</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </x-card>
 @endif
 @endsection

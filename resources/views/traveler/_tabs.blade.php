@@ -11,8 +11,8 @@
         <a href="{{ route($tab['route'], $trip) }}"
            @class([
                'rounded-full px-4 py-1.5 font-medium',
-               'bg-[#0C4A6E] text-white' => request()->routeIs($tab['route']),
-               'bg-white text-[#0C4A6E] ring-1 ring-slate-200 hover:bg-slate-50' => ! request()->routeIs($tab['route']),
+               'bg-brand text-white' => request()->routeIs($tab['route']),
+               'bg-white text-brand ring-1 ring-slate-200 hover:bg-slate-50' => ! request()->routeIs($tab['route']),
            ])
            @if (request()->routeIs($tab['route'])) aria-current="page" @endif>
             {{ $tab['label'] }}

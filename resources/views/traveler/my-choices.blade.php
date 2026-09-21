@@ -2,15 +2,13 @@
 @section('title', 'Mijn keuzes')
 
 @section('content')
-<h1 class="mb-4 text-2xl font-semibold text-[#0C4A6E]">Mijn keuzes & checklist</h1>
+<h1 class="mb-4 text-2xl font-semibold text-brand">Mijn keuzes & checklist</h1>
 
 @include('traveler._tabs')
 
 <div class="grid gap-6 lg:grid-cols-2">
     {{-- FE-05a: gekozen activiteiten --}}
-    <section class="rounded-xl bg-white p-6 shadow">
-        <h2 class="mb-4 text-lg font-semibold">Gekozen activiteiten</h2>
-
+    <x-card title="Gekozen activiteiten">
         @if ($choices->isEmpty())
             <div role="status" class="flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-slate-700">
                 <span aria-hidden="true">&#8505;</span>
@@ -38,7 +36,7 @@
                                   onsubmit="return confirm('Weet je zeker dat je deze keuze wilt annuleren?')">
                                 @csrf
                                 @method('DELETE')
-                                <button class="rounded border border-[#F97316] px-3 py-1.5 text-sm font-medium text-orange-800 hover:bg-orange-50">
+                                <button class="rounded border border-accent px-3 py-1.5 text-sm font-medium text-orange-800 hover:bg-orange-50">
                                     Annuleer keuze
                                 </button>
                             </form>
@@ -47,12 +45,10 @@
                 @endforeach
             </ul>
         @endif
-    </section>
+    </x-card>
 
     {{-- FE-05b: checklist --}}
-    <section class="rounded-xl bg-white p-6 shadow">
-        <h2 class="mb-4 text-lg font-semibold">Checklist</h2>
-
+    <x-card title="Checklist">
         @if ($checklistItems->isEmpty())
             <p class="mb-4 text-sm text-slate-600">Nog geen checklist-items.</p>
         @else
@@ -80,10 +76,10 @@
             @csrf
             <label for="label" class="sr-only">Nieuw checklist-item</label>
             <input id="label" name="label" placeholder="Bijv. paspoort gecontroleerd" required
-                   class="flex-1 rounded border-slate-300 text-sm focus:border-[#06B6D4] focus:ring-[#06B6D4]">
-            <button class="rounded bg-[#0C4A6E] px-3 py-1.5 text-sm font-medium text-white">Toevoegen</button>
+                   class="flex-1 rounded border-slate-300 text-sm focus:border-brand focus:ring-brand">
+            <x-button type="submit">Toevoegen</x-button>
         </form>
-        @error('label')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-    </section>
+        @error('label')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
+    </x-card>
 </div>
 @endsection

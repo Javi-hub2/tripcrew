@@ -2,7 +2,7 @@
 @section('title', 'Activiteiten')
 
 @section('content')
-<h1 class="mb-4 text-2xl font-semibold text-[#0C4A6E]">Activiteiten</h1>
+<h1 class="mb-4 text-2xl font-semibold text-brand">Activiteiten</h1>
 
 @include('traveler._tabs')
 
@@ -12,7 +12,7 @@
             <a href="{{ route('traveler.activities', [$trip, $d->id]) }}"
                @class([
                    'rounded px-3 py-1',
-                   'bg-[#06B6D4] font-semibold text-[#0C4A6E]' => $day && $day->id === $d->id,
+                   'bg-accent font-semibold text-white' => $day && $day->id === $d->id,
                    'bg-white ring-1 ring-slate-200' => ! ($day && $day->id === $d->id),
                ])>
                 {{ $d->date->format('d-m') }}
@@ -39,7 +39,7 @@
             @endphp
 
             {{-- FE-04: kaart met capaciteitsmeter, deadline en knop --}}
-            <article class="flex flex-col rounded-xl bg-white p-5 shadow">
+            <x-card class="flex flex-col">
                 <h2 class="mb-2 text-lg font-semibold">{{ $activity->name }}</h2>
 
                 <div class="mb-1 flex justify-between text-sm">
@@ -48,7 +48,7 @@
                 <div class="mb-3 h-2 w-full rounded bg-slate-200"
                      role="progressbar" aria-valuenow="{{ $taken }}" aria-valuemin="0" aria-valuemax="{{ $activity->capacity }}"
                      aria-label="Bezetting {{ $activity->name }}">
-                    <div class="h-2 rounded {{ $full ? 'bg-[#F97316]' : 'bg-[#06B6D4]' }}" style="width: {{ $pct }}%"></div>
+                    <div class="h-2 rounded {{ $full ? 'bg-accent-dark' : 'bg-brand' }}" style="width: {{ $pct }}%"></div>
                 </div>
 
                 <p class="mb-4 text-sm text-slate-600">
@@ -72,14 +72,13 @@
                     @else
                         <form method="POST" action="{{ route('activities.choose', $activity) }}">
                             @csrf
-                            <button type="submit"
-                                    class="w-full rounded bg-[#06B6D4] px-4 py-2 font-medium text-[#0C4A6E] hover:opacity-90">
+                            <x-button type="submit" variant="primary" class="w-full">
                                 Kies deze activiteit
-                            </button>
+                            </x-button>
                         </form>
                     @endif
                 </div>
-            </article>
+            </x-card>
         @endforeach
     </div>
 @endif
