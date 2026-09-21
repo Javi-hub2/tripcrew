@@ -20,7 +20,7 @@ inschrijvingen goedkeuren of afwijzen.
 | Zelfregistratie | `Auth/RegisterController`, `RegisterRequest`, `Mail/ActivationMail`, `auth/register.blade.php` |
 | Inschrijven voor een reis | `TripRegistrationController`, `traveler/register-trip.blade.php` |
 | Goedkeuring door coördinator | `Coordinator/RegistrationController`, `coordinator/registrations/index.blade.php` |
-| Wachtwoordherstel | `Auth/PasswordResetController`, `Notifications/ResetPasswordNotification` |
+| Wachtwoordherstel | `Auth/PasswordResetController`, `ResetPasswordRequest`, `auth/forgot-password.blade.php`, `auth/reset-password.blade.php`, `AppServiceProvider` (`ResetPassword::toMailUsing()`) |
 
 ### Ontwerpkeuzes die niet letterlijk in de briefing stonden
 
@@ -38,6 +38,12 @@ inschrijvingen goedkeuren of afwijzen.
 - Bij registratie wordt altijd een wachtwoordhash berekend, ook wanneer het e-mailadres al
   bestaat en er dus niets wordt opgeslagen. Dat is bewust: zonder dat rekenwerk verraadt de
   responstijd of een adres al een account heeft.
+- Wachtwoordherstel heeft geen eigen notificatieklasse; Laravels ingebouwde
+  `Illuminate\Auth\Notifications\ResetPassword` wordt gebruikt en de mailinhoud wordt
+  aangepast via `ResetPassword::toMailUsing()` in `AppServiceProvider`. Dat is bewust:
+  Laravels `NotificationFake` matcht in tests op de exacte klassenaam en niet op
+  overerving, waardoor een subklasse van `ResetPassword` de tests zou breken. Het
+  officiële `toMailUsing()`-extensiepunt levert bovendien minder eigen code op.
 
 ### Wat er nog open staat
 
