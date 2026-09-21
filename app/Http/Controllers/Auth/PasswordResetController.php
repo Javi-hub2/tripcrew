@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Support\Timebox;
 use Illuminate\View\View;
 
 class PasswordResetController extends Controller
@@ -30,6 +32,18 @@ class PasswordResetController extends Controller
 
         if ($user && $user->isActivated()) {
             Password::sendResetLink($data);
+        } else {
+            // Password::sendResetLink() loopt zelf door Laravels Timebox: een bcrypt-
+            // hash van het token plus een ondergrens van auth.timebox_duration (default
+            // 200ms), zie PasswordBroker::sendResetLink(). Dat gebeurt alleen op het pad
+            // "bestaat en is geactiveerd". Op de andere twee paden doen we bewust hetzelfde
+            // dure werk, binnen dezelfde ondergrens, anders verraadt de responstijd via de
+            // klok zowel of een adres een account heeft als of dat account al geactiveerd
+            // is. Niet weghalen als "onnodig werk" — zie dezelfde aanpak in
+            // RegisterController::store().
+            (new Timebox)->call(function () {
+                Hash::make(Str::random(40));
+            }, config('auth.timebox_duration', 200000));
         }
 
         return back()->with('success', self::CONFIRMATION);

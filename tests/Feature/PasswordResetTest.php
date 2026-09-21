@@ -105,4 +105,37 @@ class PasswordResetTest extends TestCase
         $this->assertStringContainsString(urlencode($user->email), $html);
         $this->assertStringContainsString('Nieuw wachtwoord instellen', $html);
     }
+
+    /**
+     * Regressietest voor een lek dat twee keer in deze codebase is voorgekomen (ook
+     * bij registreren, FE-tests): een pad dat geen bcrypt-hash uitvoert, is honderden
+     * keren sneller dan een pad dat dat wel doet. Zonder dat gelijkgetrokken te hebben,
+     * verraadt de responstijd via de klok of een adres een account heeft en of dat
+     * account al geactiveerd is — ook al is de meldingstekst identiek.
+     *
+     * De ondergrens hieronder (0,1s) is bepaald door na de fix zelf te meten: het
+     * "bestaat en is geactiveerd"-pad (dat écht via Password::sendResetLink() loopt)
+     * kostte gemiddeld ~0,22s, en de twee andere paden ~0,21s doordat ze nu bewust
+     * hetzelfde dure werk doen (Hash::make binnen dezelfde Timebox-ondergrens als de
+     * broker). Vóór de fix kostten diezelfde twee paden ~0,001-0,002s. 0,1s zit dus
+     * ruim onder de werkelijke kosten (~0,21s) en ruim boven "niets doen" (~0,002s),
+     * en blijft op een tragere machine geldig omdat het een ondergrens is, geen
+     * bovengrens.
+     */
+    public function test_the_fast_paths_still_do_real_hashing_work(): void
+    {
+        Notification::fake();
+        $notActivated = User::factory()->notActivated()->create();
+
+        $start = microtime(true);
+        $this->post('/wachtwoord-vergeten', ['email' => 'bestaatniet@example.test']);
+        $unknownDuration = microtime(true) - $start;
+
+        $start = microtime(true);
+        $this->post('/wachtwoord-vergeten', ['email' => $notActivated->email]);
+        $notActivatedDuration = microtime(true) - $start;
+
+        $this->assertGreaterThan(0.1, $unknownDuration);
+        $this->assertGreaterThan(0.1, $notActivatedDuration);
+    }
 }
