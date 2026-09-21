@@ -121,4 +121,21 @@ class TripRegistrationTest extends TestCase
             ->get(route('traveler.registrations.index'))
             ->assertForbidden();
     }
+
+    public function test_approved_registration_is_not_reset_by_registering_again(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Approved->value]);
+
+        $this->actingAs($traveler)
+            ->post(route('traveler.registrations.store', $trip))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Approved->value,
+        ]);
+    }
 }

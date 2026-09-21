@@ -39,10 +39,16 @@ class TripRegistrationController extends Controller
             'decided_by' => null,
         ];
 
-        // Een afgewezen aanvraag mag opnieuw ingediend worden.
-        $current
-            ? $user->trips()->updateExistingPivot($trip->id, $attributes)
-            : $user->trips()->attach($trip->id, $attributes);
+        try {
+            // Een afgewezen aanvraag mag opnieuw ingediend worden.
+            $current
+                ? $user->trips()->updateExistingPivot($trip->id, $attributes)
+                : $user->trips()->attach($trip->id, $attributes);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Twee gelijktijdige verzoeken: de unique index op (trip_id, user_id)
+            // heeft de tweede tegengehouden. Zelfde melding als bij dubbel inschrijven.
+            return back()->with('error', 'Je bent al ingeschreven voor deze reis.');
+        }
 
         return redirect()->route('traveler.registrations.index')
             ->with('success', 'Je aanvraag staat klaar voor de coördinator.');
