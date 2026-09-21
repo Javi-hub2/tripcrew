@@ -1,0 +1,57 @@
+<?php
+
+use App\Http\Controllers\ActivityChoiceController;
+use App\Http\Controllers\Auth\ActivationController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ChecklistItemController;
+use App\Http\Controllers\Coordinator\ActivityController;
+use App\Http\Controllers\Coordinator\ParticipantController;
+use App\Http\Controllers\Coordinator\TripController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TravelerProgramController;
+use Illuminate\Support\Facades\Route;
+
+// --- Auth (FE-01, FE-02) ---
+Route::get('/', fn () => redirect()->route('login'));
+
+Route::middleware('guest')->group(function () {
+    Route::get('/inloggen', [LoginController::class, 'show'])->name('login');
+    Route::post('/inloggen', [LoginController::class, 'login']);
+    Route::get('/activeren/{token}', [ActivationController::class, 'show'])->name('activation.show');
+    Route::post('/activeren/{token}', [ActivationController::class, 'activate'])->name('activation.activate');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/uitloggen', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    // --- Reiziger (FE-03, FE-04, FE-05) ---
+    Route::middleware('role:reiziger')->group(function () {
+        Route::prefix('reizen/{trip}')->name('traveler.')->group(function () {
+            Route::get('/', [TravelerProgramController::class, 'dashboard'])->name('dashboard');
+            Route::get('/activiteiten/{tripDay?}', [TravelerProgramController::class, 'activities'])->name('activities');
+            Route::get('/mijn-keuzes', [ActivityChoiceController::class, 'myChoices'])->name('my-choices');
+            Route::post('/checklist', [ChecklistItemController::class, 'store'])->name('checklist.store');
+        });
+
+        Route::post('/activiteiten/{activity}/kiezen', [ActivityChoiceController::class, 'store'])->name('activities.choose');
+        Route::delete('/mijn-keuzes/{choice}', [ActivityChoiceController::class, 'destroy'])->name('choices.destroy');
+        Route::patch('/checklist/{checklistItem}', [ChecklistItemController::class, 'toggle'])->name('checklist.toggle');
+    });
+
+    // --- Coördinator (FE-06, FE-07, FE-08) ---
+    Route::middleware('role:coordinator')->prefix('coordinator')->name('coordinator.')->group(function () {
+        Route::resource('trips', TripController::class)->except(['show']);
+
+        Route::prefix('trips/{trip}')->name('trips.')->group(function () {
+            Route::get('activiteiten', [ActivityController::class, 'index'])->name('activities.index');
+            Route::get('activiteiten/nieuw', [ActivityController::class, 'create'])->name('activities.create');
+            Route::post('activiteiten', [ActivityController::class, 'store'])->name('activities.store');
+            Route::get('activiteiten/{activity}/bewerken', [ActivityController::class, 'edit'])->name('activities.edit');
+            Route::put('activiteiten/{activity}', [ActivityController::class, 'update'])->name('activities.update');
+            Route::delete('activiteiten/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
+
+            Route::get('deelnemers', [ParticipantController::class, 'index'])->name('participants.index');
+        });
+    });
+});
