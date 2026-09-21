@@ -6,16 +6,18 @@
     <title>@yield('title', 'TripCrew')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-[#F8FAFC] text-slate-800">
-    <nav class="bg-[#0C4A6E] text-white">
+<body class="min-h-screen bg-sand text-slate-800 antialiased">
+    <nav class="bg-brand text-white shadow-sm">
         <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-            <a href="{{ route('dashboard') }}" class="text-lg font-semibold">TripCrew</a>
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-lg font-semibold">
+                <span aria-hidden="true">&#9992;</span> TripCrew
+            </a>
             @auth
                 <div class="flex items-center gap-4 text-sm">
                     <span>{{ Auth::user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="rounded bg-[#06B6D4] px-3 py-1.5 font-medium text-[#0C4A6E] hover:opacity-90">
+                        <button class="rounded-lg bg-white/15 px-3 py-1.5 font-medium text-white hover:bg-white/25">
                             Uitloggen
                         </button>
                     </form>
