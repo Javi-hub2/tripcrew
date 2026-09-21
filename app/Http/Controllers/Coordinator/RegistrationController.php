@@ -35,6 +35,15 @@ class RegistrationController extends Controller
 
     private function decide(Trip $trip, User $user, RegistrationStatus $status, string $message): RedirectResponse
     {
+        $registration = $trip->registrations()->where('user_id', $user->id)->first();
+
+        abort_unless($registration !== null, 404);
+
+        if ($registration->pivot->status !== RegistrationStatus::Pending->value) {
+            return redirect()->route('coordinator.registrations.index')
+                ->with('error', 'Deze aanvraag is al afgehandeld.');
+        }
+
         $trip->registrations()->updateExistingPivot($user->id, [
             'status' => $status->value,
             'decided_at' => now(),

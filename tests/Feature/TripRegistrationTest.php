@@ -201,4 +201,36 @@ class TripRegistrationTest extends TestCase
             ->patch(route('coordinator.registrations.approve', [$trip, $traveler]))
             ->assertForbidden();
     }
+
+    public function test_approving_a_nonexistent_registration_gives_no_success_message(): void
+    {
+        $trip = Trip::factory()->create();
+        $stranger = User::factory()->create();
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->patch(route('coordinator.registrations.approve', [$trip, $stranger]))
+            ->assertNotFound();
+
+        $this->assertDatabaseMissing('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $stranger->id,
+        ]);
+    }
+
+    public function test_already_decided_registration_cannot_be_decided_again(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Approved->value]);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->patch(route('coordinator.registrations.reject', [$trip, $traveler]))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Approved->value,
+        ]);
+    }
 }
