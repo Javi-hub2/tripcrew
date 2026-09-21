@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityChoiceController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\Coordinator\ActivityController;
@@ -24,6 +25,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/activeren/{token}', [ActivationController::class, 'activate'])->name('activation.activate');
     Route::get('/registreren', [RegisterController::class, 'show'])->name('register');
     Route::post('/registreren', [RegisterController::class, 'store'])->name('register.store');
+    Route::get('/wachtwoord-vergeten', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/wachtwoord-vergeten', [PasswordResetController::class, 'email'])->name('password.email');
+    Route::get('/wachtwoord-herstellen/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
+    Route::post('/wachtwoord-herstellen', [PasswordResetController::class, 'update'])->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {

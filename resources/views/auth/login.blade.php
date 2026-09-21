@@ -8,6 +8,9 @@
             @csrf
             <x-field name="email" label="E-mailadres" type="email" :value="old('email')" required autofocus />
             <x-field name="password" label="Wachtwoord" type="password" required />
+            <p class="text-right text-sm">
+                <a href="{{ route('password.request') }}" class="text-brand underline">Wachtwoord vergeten?</a>
+            </p>
             <x-button type="submit" class="w-full">Inloggen</x-button>
         </form>
         <p class="mt-4 text-center text-sm text-slate-600">
