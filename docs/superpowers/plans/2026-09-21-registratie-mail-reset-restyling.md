@@ -466,13 +466,37 @@ Voeg bovenaan toe: `use App\Enums\RegistrationStatus;`
 
 `hasParticipants()` blijft `$this->travelers()->exists()` — een reis met alleen openstaande aanvragen mag dus wél verwijderd worden. Dat is de bedoeling.
 
-- [ ] **Step 7: Policy bijwerken**
+- [ ] **Step 7: Beide policies bijwerken**
 
 In `app/Policies/TripPolicy.php`, methode `view()`:
 
 ```php
         // Reiziger mag alleen een reis zien waarvoor zijn inschrijving is goedgekeurd.
         return $user->approvedTrips()->whereKey($trip->id)->exists();
+```
+
+En in `app/Policies/ActivityPolicy.php:37` staat dezelfde lidmaatschapscontrole. Zonder
+deze wijziging kan een reiziger met een aanvraag in behandeling alsnog een activiteit
+kiezen:
+
+```php
+        return $user->approvedTrips()->whereKey($activity->tripDay->trip_id)->exists();
+```
+
+Voeg deze test toe aan `tests/Feature/TripRegistrationTest.php`:
+
+```php
+    public function test_pending_traveler_cannot_choose_an_activity(): void
+    {
+        $activity = \App\Models\Activity::factory()->create();
+        $trip = $activity->tripDay->trip;
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+
+        $this->actingAs($traveler)
+            ->post(route('activities.choose', $activity))
+            ->assertForbidden();
+    }
 ```
 
 - [ ] **Step 8: Bestaande attach-plekken bijwerken**
@@ -626,7 +650,9 @@ class TripRegistrationController extends Controller
 
         return view('traveler.register-trip', [
             'trips' => Trip::orderBy('start_date')->get(),
-            'registrations' => $user->trips()->pluck('status', 'trips.id'),
+            // Kolom expliciet kwalificeren: 'status' alleen zou nu toevallig werken
+            // omdat trips geen kolom status heeft.
+            'registrations' => $user->trips()->pluck('trip_user.status', 'trips.id'),
         ]);
     }
 
