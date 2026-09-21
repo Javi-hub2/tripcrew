@@ -17,7 +17,7 @@
                     <span>{{ Auth::user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="rounded-lg bg-white/15 px-3 py-1.5 font-medium text-white hover:bg-white/25">
+                        <button class="rounded-lg bg-brand-dark px-3 py-1.5 font-medium text-white hover:bg-brand-dark/80">
                             Uitloggen
                         </button>
                     </form>
