@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityChoiceController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\Coordinator\ActivityController;
 use App\Http\Controllers\Coordinator\ParticipantController;
@@ -21,6 +22,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/inloggen', [LoginController::class, 'login']);
     Route::get('/activeren/{token}', [ActivationController::class, 'show'])->name('activation.show');
     Route::post('/activeren/{token}', [ActivationController::class, 'activate'])->name('activation.activate');
+    Route::get('/registreren', [RegisterController::class, 'show'])->name('register');
+    Route::post('/registreren', [RegisterController::class, 'store'])->name('register.store');
 });
 
 Route::middleware('auth')->group(function () {

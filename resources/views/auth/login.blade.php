@@ -10,6 +10,10 @@
             <x-field name="password" label="Wachtwoord" type="password" required />
             <x-button type="submit" class="w-full">Inloggen</x-button>
         </form>
+        <p class="mt-4 text-center text-sm text-slate-600">
+            Nog geen account?
+            <a href="{{ route('register') }}" class="font-medium text-brand underline">Registreren</a>
+        </p>
     </x-card>
 </div>
 @endsection
