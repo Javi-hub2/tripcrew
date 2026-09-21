@@ -1,6 +1,6 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-21, aan het eind van Taak 4.
+Laatst bijgewerkt: 2026-09-21, tijdens Taak 5.
 
 ## Wat wordt hier gebouwd
 
@@ -23,34 +23,20 @@ Branch: `feature/registratie-mail-reset` (niet op `main`, zodat alles terug te d
 | 2 Alle bestaande views omgezet | klaar, review schoon | `64d22c3..83866c4` |
 | 3 Statusveld op `trip_user` + autorisatie | klaar, review schoon | `83866c4..3ff7507` |
 | 4 Reiziger schrijft zich in voor een reis | klaar, review schoon | `3ff7507..a4b7e4b` |
-| 5 Coördinator keurt goed/af | **half af — zie hieronder** | — |
+| 5 Coördinator keurt goed/af | code gecommit, review loopt | `a4b7e4b..2a9741b` |
 | 6 Registratie + activatiemail | nog niet begonnen | — |
 | 7 Wachtwoord vergeten | nog niet begonnen | — |
 | 8 Mailconfiguratie, README, opruimen | nog niet begonnen | — |
 
-Teststand bij `a4b7e4b`: 29 geslaagd, 1 gefaald. Die ene is `tests/Feature/ExampleTest.php`,
+Teststand bij `2a9741b`: 33 geslaagd, 1 gefaald. Die ene is `tests/Feature/ExampleTest.php`,
 Laravel-boilerplate die botst met de redirect van `/` naar de loginpagina; Taak 8 verwijdert hem.
 
-## Taak 5 is halverwege afgebroken
+## Taak 5 bleek toch gecommit
 
-Er stond werk in de werkmap dat NIET gecommit is. Controleer bij hervatten eerst:
-
-```bash
-cd /mnt/c/xampp/htdocs/tripcrew
-git log --oneline -3      # is er alsnog een commit bijgekomen?
-git status --short        # wat ligt er los?
-```
-
-Op het moment van schrijven lagen er: `app/Http/Controllers/Coordinator/RegistrationController.php`
-(nieuw), plus wijzigingen in `routes/web.php` en `tests/Feature/TripRegistrationTest.php`.
-De view `resources/views/coordinator/registrations/index.blade.php` was nog niet af.
-
-Twee manieren om verder te gaan:
-
-1. **Opruimen en Taak 5 opnieuw doen** (aanbevolen, het is een kleine taak):
-   `git checkout -- routes/web.php tests/Feature/TripRegistrationTest.php` en
-   `rm app/Http/Controllers/Coordinator/RegistrationController.php`, daarna Taak 5 uit het plan.
-2. **Afmaken wat er ligt**: vergelijk het losse werk met Taak 5 in het plan en vul aan.
+De subagent van Taak 5 viel om op een API-limiet, maar dat gebeurde pas tijdens het schrijven van
+zijn rapport — zijn code was al gecommit als `2a9741b`. De werkmap is schoon. Zelf nagemeten:
+33 tests geslaagd (was 29) en de routes `coordinator.registrations.index`, `.approve` en `.reject`
+bestaan. Er is wel geen `task-5-report.md`, dus de review draait op brief en diff alleen.
 
 ## Hervatten
 
