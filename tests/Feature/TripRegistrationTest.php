@@ -138,4 +138,67 @@ class TripRegistrationTest extends TestCase
             'status' => RegistrationStatus::Approved->value,
         ]);
     }
+
+    public function test_coordinator_sees_pending_registrations(): void
+    {
+        $trip = Trip::factory()->create(['name' => 'Skireis Oostenrijk']);
+        $traveler = User::factory()->create(['name' => 'Sam Test']);
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->get(route('coordinator.registrations.index'))
+            ->assertOk()
+            ->assertSee('Sam Test')
+            ->assertSee('Skireis Oostenrijk');
+    }
+
+    public function test_coordinator_can_approve_a_registration(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+        $coordinator = User::factory()->coordinator()->create();
+
+        $this->actingAs($coordinator)
+            ->patch(route('coordinator.registrations.approve', [$trip, $traveler]))
+            ->assertRedirect(route('coordinator.registrations.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Approved->value,
+            'decided_by' => $coordinator->id,
+        ]);
+
+        $this->actingAs($traveler)->get(route('traveler.dashboard', $trip))->assertOk();
+    }
+
+    public function test_coordinator_can_reject_a_registration(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->patch(route('coordinator.registrations.reject', [$trip, $traveler]))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Rejected->value,
+        ]);
+    }
+
+    public function test_traveler_cannot_approve_registrations(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+
+        $this->actingAs($traveler)
+            ->patch(route('coordinator.registrations.approve', [$trip, $traveler]))
+            ->assertForbidden();
+    }
 }

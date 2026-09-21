@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\Coordinator\ActivityController;
 use App\Http\Controllers\Coordinator\ParticipantController;
+use App\Http\Controllers\Coordinator\RegistrationController;
 use App\Http\Controllers\Coordinator\TripController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TravelerProgramController;
@@ -46,6 +47,10 @@ Route::middleware('auth')->group(function () {
     // --- Coördinator (FE-06, FE-07, FE-08) ---
     Route::middleware('role:coordinator')->prefix('coordinator')->name('coordinator.')->group(function () {
         Route::resource('trips', TripController::class)->except(['show']);
+
+        Route::get('aanvragen', [RegistrationController::class, 'index'])->name('registrations.index');
+        Route::patch('aanvragen/{trip}/{user}/goedkeuren', [RegistrationController::class, 'approve'])->name('registrations.approve');
+        Route::patch('aanvragen/{trip}/{user}/afwijzen', [RegistrationController::class, 'reject'])->name('registrations.reject');
 
         Route::prefix('trips/{trip}')->name('trips.')->group(function () {
             Route::get('activiteiten', [ActivityController::class, 'index'])->name('activities.index');
