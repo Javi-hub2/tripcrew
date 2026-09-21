@@ -4,9 +4,14 @@
 @section('content')
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-2xl font-semibold text-brand">Reizen</h1>
-    <x-button variant="primary" href="{{ route('coordinator.trips.create') }}">
-        + Nieuwe reis
-    </x-button>
+    <div class="flex flex-wrap gap-2">
+        <x-button variant="secondary" href="{{ route('coordinator.registrations.index') }}">
+            Openstaande aanvragen ({{ $pendingRegistrationsCount }})
+        </x-button>
+        <x-button variant="primary" href="{{ route('coordinator.trips.create') }}">
+            + Nieuwe reis
+        </x-button>
+    </div>
 </div>
 
 @if ($trips->isEmpty())

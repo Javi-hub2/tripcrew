@@ -34,6 +34,24 @@ class TripRegistrationTest extends TestCase
             ->assertOk();
     }
 
+    /**
+     * Eindreview-bevinding: er was geen enkele link naar het inschrijfscherm zodra
+     * een reiziger eenmaal is goedgekeurd, waardoor hij zich nooit voor een tweede
+     * reis kon inschrijven of tussen goedgekeurde reizen kon wisselen.
+     */
+    public function test_approved_traveler_sees_a_link_back_to_my_trips_on_the_day_program(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Approved->value]);
+
+        $this->actingAs($traveler)
+            ->get(route('traveler.dashboard', $trip))
+            ->assertOk()
+            ->assertSee('Mijn reizen')
+            ->assertSee(route('traveler.registrations.index'), false);
+    }
+
     public function test_only_approved_travelers_count_as_participants(): void
     {
         $trip = Trip::factory()->create();
@@ -152,6 +170,26 @@ class TripRegistrationTest extends TestCase
             ->assertSee('Skireis Oostenrijk');
     }
 
+    /**
+     * Eindreview-bevinding: het ontwerp vraagt op het aanvragenscherm om "naam,
+     * e-mailadres, reis en datum". De aanvraagdatum werd al opgeslagen (requested_at)
+     * maar nergens getoond.
+     */
+    public function test_coordinator_sees_the_request_date_in_a_dutch_format(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create(['name' => 'Sam Test']);
+        $trip->registrations()->attach($traveler, [
+            'status' => RegistrationStatus::Pending->value,
+            'requested_at' => '2030-01-15 10:00:00',
+        ]);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->get(route('coordinator.registrations.index'))
+            ->assertOk()
+            ->assertSee('15-01-2030');
+    }
+
     public function test_coordinator_can_approve_a_registration(): void
     {
         $trip = Trip::factory()->create();
@@ -231,6 +269,39 @@ class TripRegistrationTest extends TestCase
             'trip_id' => $trip->id,
             'user_id' => $traveler->id,
             'status' => RegistrationStatus::Approved->value,
+        ]);
+    }
+
+    /**
+     * Eindreview-bevinding: de statuscontrole en de schrijfactie in decide() waren
+     * niet atomair, waardoor twee coördinatoren dezelfde pending aanvraag allebei
+     * konden "winnen". De update moet nu voorwaardelijk zijn (where status=pending)
+     * en beslissen op het aantal geraakte rijen, zodat alleen de eerste beslissing
+     * ooit wegschrijft — ook al lopen twee verzoeken tegelijk binnen. Dat gedrag
+     * simuleren we hier sequentieel: de tweede beslissing moet de "al afgehandeld"-
+     * melding krijgen en decided_by/status van de eerste moeten intact blijven.
+     */
+    public function test_two_coordinators_deciding_on_the_same_pending_registration_only_one_wins(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+        $first = User::factory()->coordinator()->create();
+        $second = User::factory()->coordinator()->create();
+
+        $this->actingAs($first)
+            ->patch(route('coordinator.registrations.approve', [$trip, $traveler]))
+            ->assertSessionHas('success');
+
+        $this->actingAs($second)
+            ->patch(route('coordinator.registrations.reject', [$trip, $traveler]))
+            ->assertSessionHas('error', 'Deze aanvraag is al afgehandeld.');
+
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Approved->value,
+            'decided_by' => $first->id,
         ]);
     }
 }
