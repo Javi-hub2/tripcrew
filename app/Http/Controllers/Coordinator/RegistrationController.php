@@ -8,7 +8,6 @@ use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 // FE-06: de coördinator beslist wie er meegaat.

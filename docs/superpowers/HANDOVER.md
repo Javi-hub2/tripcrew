@@ -1,6 +1,6 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-21, tijdens de fixronde na de eindreview.
+Laatst bijgewerkt: 2026-09-23, na de scoped hercontrole over de fixdiff.
 
 ## Wat wordt hier gebouwd
 
@@ -19,8 +19,9 @@ brede review over de hele branch.
 
 ## Waar staat het nu
 
-Branch: `feature/registratie-mail-reset`. Alle acht taken zijn af en gereviewd.
-De eindreview over de hele branch is gedaan en de fixronde daarna is **halverwege afgebroken**.
+Branch: `feature/registratie-mail-reset`. Alle acht taken zijn af en gereviewd. De eindreview over
+de hele branch is gedaan; van de negen punten daaruit staan er nog **drie open** (punt 4, 5 en 6 —
+zie hieronder). De suite is groen en de assets zijn gebouwd.
 
 | Taak | Status | Commits |
 |---|---|---|
@@ -32,51 +33,53 @@ De eindreview over de hele branch is gedaan en de fixronde daarna is **halverweg
 | 6 Zelfregistratie + activatiemail | klaar | `8529329..0fcf303` |
 | 7 Wachtwoord vergeten | klaar | `0fcf303..fb16db9` |
 | 8 Mailconfiguratie, README, opruimen | klaar | `9aa90c2..2fad504` |
-| Fixronde na eindreview | **onaf, zie hieronder** | `93c99f3` (wip) |
+| Fixronde na eindreview | punt 1-3 en 7-9 klaar, **4-6 niet, zie hieronder** | `93c99f3`, `e1fb99a`, `0868c35` |
 
-## Hier ga je morgen verder: de fixronde afmaken
+## Stand van de fixronde
 
-Commit `93c99f3` is bewust een WIP-commit. Teststand: **56 slagen, 3 falen**. Die drie falen
-met opzet — het zijn test-first tests waarvan de implementatie nog moet komen:
+De eindreview leverde negen punten op. **Punt 1, 2, 3, 7, 8 en 9 zijn opgelost en gereviewd.**
+Teststand: **59 slagen, 0 falen**, en `npm run build` is gedaan.
 
-1. `CoordinatorTest > capacity cannot be lowered below the number of existing choices`
-2. `CoordinatorTest > activities index does not crash when capacity is zero`
-3. `TripRegistrationTest > coordinator sees the request date in a dutch format`
+Wat er in punt 7, 8 en 9 is opgelost (commit `e1fb99a`):
 
-De eindreview leverde negen punten op. **Punt 1 tot en met 6 zijn gedaan**, punt 7, 8 en 9 niet:
+7. **Capaciteit kon onder het aantal bestaande keuzes gezet worden.** `StoreActivityRequest`
+   berekent de ondergrens nu uit het aantal gemaakte keuzes (`min:` wordt dat aantal, minimaal 1).
+   Bij aanmaken is er geen activiteit in de route, dus blijft de grens 1 en wordt er geen query
+   gedaan. De melding noemt het werkelijke aantal. Grensgeval (capaciteit == aantal keuzes) mag.
+8. **Deling door nul liet het coördinatoroverzicht crashen.** `coordinator/activities/index`
+   gebruikt nu dezelfde bewaking als `traveler/activities`: bij capaciteit 0 is de balk 100%.
+9. **De aanvraagdatum werd opgeslagen maar nergens getoond.** Staat nu onder het e-mailadres op
+   `coordinator/registrations/index`, in `d-m-Y`, en alleen als `requested_at` gevuld is.
 
-**7. Capaciteit kan onder het aantal bestaande keuzes gezet worden.**
-`app/Http/Requests/StoreActivityRequest.php:26` valideert `capacity` alleen op `min:1`. Een
-coördinator kan de capaciteit van een activiteit met tien deelnemers op twee zetten; dan staan er
-tien mensen op twee plekken. Valideer bij het BEWERKEN van een bestaande activiteit dat `capacity`
-niet lager is dan het aantal gemaakte keuzes, met een Nederlandse melding die het werkelijke aantal
-noemt. Bij aanmaken verandert er niets.
+## Hier ga je verder: punt 4, 5 en 6 zijn NOOIT geland
 
-**8. Deling door nul laat een coördinatorscherm crashen.**
-`resources/views/coordinator/activities/index.blade.php:32` rekent
-`round($activity->choices_count / $activity->capacity * 100)` zonder bewaking.
-`resources/views/traveler/activities.blade.php:35` doet dat wél — neem die bewaking over.
+De vorige sessie schreef in deze overdracht dat punt 1 t/m 6 gedaan waren. De hercontrole over
+`git diff fb16db9..HEAD` laat zien dat **punt 4, 5 en 6 niet in de code staan**. Punt 1, 2 en 3
+staan er wel. Wat er nog moet gebeuren:
 
-**9. De aanvraagdatum wordt opgeslagen maar nergens getoond.**
-Het ontwerp vraagt op het aanvragenscherm om naam, e-mailadres, reis én datum.
-`resources/views/coordinator/registrations/index.blade.php` toont alleen naam en e-mail, terwijl
-`requested_at` wel gevuld wordt. Toon de datum in Nederlands formaat.
+**4. Validatiefouten zonder eigen bericht zijn nog Engels.** Er is géén `lang/`-map in het project.
+Laravel 11 levert die niet mee, dus alles waarvoor geen eigen `messages()` bestaat komt in het
+Engels terug. Publiceer de Nederlandse regels (`php artisan lang:publish` en dan vertalen, of een
+eigen `lang/nl/validation.php`) en zet `APP_LOCALE=nl` in `.env`. Test: post een leeg formulier en
+verwacht een Nederlandse melding.
 
-Daarna: `npm run build`, volledige suite groen, committen, en dan nog één scoped hercontrole over
-de fixdiff (`git diff fb16db9..HEAD`).
+**5. Er is geen rate limiting op inloggen en registreren.** `throttle` komt in `routes/web.php`
+nergens voor. Zonder limiet kan iemand ongelimiteerd wachtwoorden of e-mailadressen aftasten. Zet
+`throttle:...` op de POST-routes van login, registratie en wachtwoordherstel, met een Nederlandse
+melding bij te veel pogingen.
 
-## Wat er in punt 1 tot en met 6 is opgelost
+**6. De race bij twee coördinatoren is niet afgevangen.**
+`Coordinator\RegistrationController::decide()` leest de status en schrijft daarna, zonder transactie
+en zonder lock. Twee gelijktijdige beslissingen kunnen beide door de `Pending`-controle glippen; de
+laatste schrijver wint en beide coördinatoren zien "gelukt". Los het op met een voorwaardelijke
+update in één statement (alleen bijwerken zolang de status nog `pending` is) en beslis op het aantal
+geraakte rijen, of met `lockForUpdate()` binnen een transactie.
+De bestaande test `test_two_coordinators_deciding_on_the_same_pending_registration_only_one_wins`
+dekt dit **niet**: hij doet de twee beslissingen na elkaar en blijft dus ook zonder atomiciteit
+groen. Er is een echte gelijktijdigheidstest nodig (of tenminste een test die de conditionele
+update aantoont), net als bij TE-05.
 
-1. **Een nooit-geactiveerd account was permanent onbruikbaar.** Kwam de activatiemail niet aan, dan
-   hielp opnieuw registreren niet (adres bestaat al, dus geen mail) en wachtwoord-vergeten ook niet
-   (dat weigert niet-geactiveerde accounts). Nu stuurt een tweede registratie op een
-   niet-geactiveerd adres een nieuwe activatiemail, met exact dezelfde bevestigingstekst.
-2. De coördinator kon `/coordinator/aanvragen` niet bereiken vanaf zijn startpagina.
-3. De reiziger had geen enkele link naar `/reizen` en kon zich dus nooit voor een tweede reis
-   inschrijven, terwijl de backend dat wel toestaat.
-4. Validatiefouten zonder eigen bericht waren Engels; er is nu een Nederlandse `lang/nl`.
-5. Geen rate limiting op inloggen en registreren.
-6. Race bij twee coördinatoren die tegelijk over dezelfde aanvraag beslissen.
+Let op: `lockForUpdate()` werkt op MariaDB, niet op de SQLite waarop de tests draaien.
 
 ## Twee punten die bewust NIET zijn opgelost — jouw keuze
 
