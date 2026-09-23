@@ -1,6 +1,41 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, na het afmaken van de fixronde (punt 4 t/m 9).
+Laatst bijgewerkt: 2026-09-23, na het pushen naar GitHub en het openen van PR #1.
+
+## Hier ga je verder: de mail echt laten versturen
+
+Alle negen reviewpunten zijn af en alles staat op GitHub. Eén stap ligt klaar en wacht op de
+opdrachtgever:
+
+1. **Jij (opdrachtgever):** maak een Gmail **app-wachtwoord** aan (Google-account → Beveiliging →
+   App-wachtwoorden; tweestapsverificatie moet aan staan). Gebruik een persoonlijk Gmail-account,
+   niet het Yuverta-adres: dat is Microsoft 365 en blokkeert SMTP. Zet daarna in
+   `C:\xampp\htdocs\tripcrew\.env`:
+
+   ```
+   MAIL_MAILER=smtp
+   MAIL_USERNAME=jouwadres@gmail.com
+   MAIL_PASSWORD=<app-wachtwoord van 16 tekens, zonder spaties>
+   MAIL_FROM_ADDRESS=jouwadres@gmail.com
+   ```
+
+   De instructie staat ook als commentaar boven `MAIL_MAILER` in `.env` zelf. `.env` staat in
+   `.gitignore` en gaat dus nooit mee naar de openbare repo.
+
+2. **Daarna:** `php artisan config:clear`, en een echte registratie doen op een adres dat de
+   opdrachtgever noemt. Controleren of de mail aankomt (ook de spammap) en of de activatielink het
+   doet. Zolang stap 1 niet gedaan is blijft `MAIL_MAILER=log` en komen de mails in
+   `storage/logs/laravel.log` — de flow werkt dan wel, de bezorging niet.
+
+3. Lees vóór die omzetting punt A hieronder: met echte bezorging wordt de responstijd bij
+   registreren en wachtwoordherstel weer een signaal of een adres een account heeft.
+
+## Waar dit op GitHub staat
+
+`https://github.com/Javi-hub2/tripcrew` (openbaar). `main` is de MVP plus het ontwerp;
+`feature/registratie-mail-reset` heeft alle 28 commits van dit werk en staat open als **PR #1**,
+mergebaar zonder conflicten. Na het mergen lokaal `git checkout main && git pull`, anders lopen de
+werkmap en GitHub uit de pas.
 
 ## Wat wordt hier gebouwd
 
