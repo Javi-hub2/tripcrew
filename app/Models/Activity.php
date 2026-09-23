@@ -39,11 +39,6 @@ class Activity extends Model
         return max(0, $this->capacity - $this->takenSeats());
     }
 
-    public function isFull(): bool
-    {
-        return $this->seatsLeft() <= 0;
-    }
-
     public function deadlineHasPassed(): bool
     {
         return now()->greaterThan($this->deadline);
