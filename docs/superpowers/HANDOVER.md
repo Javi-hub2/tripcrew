@@ -49,7 +49,7 @@ vormgeving.
   `.superpowers/sdd/2026-09-21-registratie-mail-reset-restyling/progress.md` (git-ignored, staat wel
   op schijf). Per taak staan daar ook een brief en een rapport.
 
-Werkwijze: per taak een verse subagent, daarna een review, dan fixrondes, en aan het eind één
+Werkwijze: per taak eerst bouwen, daarna een review, dan fixrondes, en aan het eind één
 brede review over de hele branch.
 
 ## Waar staat het nu
@@ -88,7 +88,7 @@ Wat er in punt 7, 8 en 9 is opgelost (commit `e1fb99a`):
 
 ## Punt 4, 5 en 6 — alsnog gedaan
 
-De vorige sessie schreef dat punt 1 t/m 6 klaar waren; de hercontrole liet zien dat 4, 5 en 6 niet
+Eerder stond hier dat punt 1 t/m 6 klaar waren; de hercontrole liet zien dat 4, 5 en 6 niet
 in de code stonden. Ze zijn daarna alsnog test-first gebouwd:
 
 **4. Nederlandse validatiemeldingen.** `lang/nl/validation.php` bevat de regels die dit project
@@ -160,12 +160,9 @@ C:\xampp\php\php.exe artisan serve
 npm run build                            # na wijzigingen in views of CSS
 ```
 
-`npm run build` hoeft meestal niet meer met de hand: `.claude/settings.json` bevat een async
-PostToolUse-hook die `.claude/hooks/tailwind-build.sh` aanroept. Die bouwt de assets opnieuw zodra
-een Blade- of CSS-bestand van dit project gewijzigd is (log: `/tmp/tripcrew-vite-build.log`). De
-hook werkt alleen in sessies die Claude Code **in deze map** start — dus in
-`/mnt/c/xampp/htdocs/tripcrew`, niet in de oude kopie onder OneDrive. Bewerk je views in PhpStorm in
-plaats van via Claude, gebruik dan `npm run dev` (Vite-watcher).
+Werk vanuit `/mnt/c/xampp/htdocs/tripcrew`, niet vanuit de oude kopie onder OneDrive. Gebruik tijdens
+het bewerken van views of CSS `npm run dev` (Vite-watcher), dan worden de assets vanzelf opnieuw
+gebouwd.
 
 Database: MariaDB via XAMPP, database `tripcrew`, gebruiker `root` zonder wachtwoord.
 Inloggen: `coordinator@tripcrew.test` en `reiziger@tripcrew.test`, wachtwoord `password`.
@@ -219,7 +216,7 @@ Alle met onderbouwing in het voortgangsregister. Kort:
 7. **Database opnieuw opgebouwd** op jouw verzoek; daarbij bleek dat er géén data verloren was gegaan
    bij een eerdere, per ongeluk uitgevoerde rollback.
 8. **Twee keer een timinglek gerepareerd** (registratie en wachtwoordherstel) door op alle paden even
-   duur rekenwerk te doen. Beide keren zat de fout in mijn eigen plan.
+   duur rekenwerk te doen. Beide keren zat de fout in het oorspronkelijke plan.
 9. **Mailnamespace `app-mail` in plaats van `mail`**, omdat `mail` bij Laravel gereserveerd is en door
    markdown-mails overschreven wordt.
 10. **Geen eigen `ResetPasswordNotification`-klasse** maar `ResetPassword::toMailUsing()`, omdat
