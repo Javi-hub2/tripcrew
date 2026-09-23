@@ -121,6 +121,15 @@ De test `test_a_decision_made_between_lookup_and_write_is_not_overwritten` boots
 Op de oude implementatie faalt die test, op de nieuwe niet — anders dan de oudere test
 `..._only_one_wins`, die de twee beslissingen na elkaar doet en ook zonder atomiciteit groen bleef.
 
+## Na de oplevering gevonden: 403 na inloggen als coördinator
+
+Opende je als gast (of met een verlopen reizigerssessie) een reizigerspagina en logde je daarna in
+als coördinator, dan stuurde `redirect()->intended()` je naar die reizigerspagina en gaf de
+rolcontrole een 403. `LoginController` gebruikt de onthouden pagina nu alleen als de
+`role:`-middleware van die route de ingelogde rol doorlaat; anders gaat het naar het dashboard.
+Tests in `AuthTest`: de coördinator gaat niet naar een onthouden reizigerspagina, en een reiziger
+of coördinator gaat wél naar een onthouden pagina van de eigen rol.
+
 ## Timing: punt A bewust zo gelaten, punt B opgelost
 
 **A. Zodra echte Gmail-bezorging aan staat, lekt de responstijd weer.**

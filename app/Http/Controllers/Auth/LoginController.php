@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 // FE-02
 class LoginController extends Controller
@@ -40,7 +43,32 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        // Terug naar de pagina die de gast probeerde te openen, maar alleen als deze rol
+        // die mag zien. Anders kwam een coördinator die in een browser met een oude
+        // reizigerssessie inlogde meteen op een 403 uit.
+        $intended = $request->session()->pull('url.intended');
+
+        return redirect()->to(
+            $intended && $this->mayVisit(Auth::user(), $intended) ? $intended : route('dashboard')
+        );
+    }
+
+    /** Laat de rol-middleware (role:xxx) van de route achter deze URL deze gebruiker door? */
+    private function mayVisit(User $user, string $url): bool
+    {
+        try {
+            $route = Route::getRoutes()->match(Request::create($url));
+        } catch (HttpException) {
+            return false; // onbekende URL of verkeerde methode
+        }
+
+        foreach ($route->gatherMiddleware() as $middleware) {
+            if (is_string($middleware) && str_starts_with($middleware, 'role:') && substr($middleware, 5) !== $user->role) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function logout(Request $request): RedirectResponse
