@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RegistrationStatus;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -54,7 +55,14 @@ class User extends Authenticatable
 
     public function trips(): BelongsToMany
     {
-        return $this->belongsToMany(Trip::class);
+        return $this->belongsToMany(Trip::class)
+            ->withPivot(['status', 'requested_at', 'decided_at', 'decided_by'])
+            ->withTimestamps();
+    }
+
+    public function approvedTrips(): BelongsToMany
+    {
+        return $this->trips()->wherePivot('status', RegistrationStatus::Approved->value);
     }
 
     public function activityChoices(): HasMany

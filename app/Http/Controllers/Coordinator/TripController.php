@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coordinator;
 
+use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTripRequest;
 use App\Models\Trip;
@@ -9,6 +10,7 @@ use App\Models\TripDay;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 // FE-06
 class TripController extends Controller
@@ -19,7 +21,13 @@ class TripController extends Controller
 
         $trips = Trip::withCount('travelers')->orderBy('start_date')->get();
 
-        return view('coordinator.trips.index', compact('trips'));
+        // Aantal openstaande aanvragen over alle reizen heen (eindreview: de
+        // coördinator had vanaf dit scherm geen weg naar het aanvragenscherm).
+        $pendingRegistrationsCount = DB::table('trip_user')
+            ->where('status', RegistrationStatus::Pending->value)
+            ->count();
+
+        return view('coordinator.trips.index', compact('trips', 'pendingRegistrationsCount'));
     }
 
     public function create(): View

@@ -34,6 +34,6 @@ class ActivityPolicy
             return false;
         }
 
-        return $user->trips()->whereKey($activity->tripDay->trip_id)->exists();
+        return $user->approvedTrips()->whereKey($activity->tripDay->trip_id)->exists();
     }
 }

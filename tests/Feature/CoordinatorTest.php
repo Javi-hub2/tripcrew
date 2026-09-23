@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RegistrationStatus;
+use App\Models\Activity;
+use App\Models\ActivityChoice;
 use App\Models\ChecklistItem;
 use App\Models\Trip;
 use App\Models\User;
@@ -11,6 +14,101 @@ use Tests\TestCase;
 class CoordinatorTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * Eindreview-bevinding: vanaf het reizenoverzicht was er geen weg naar het
+     * aanvragenscherm als er nog geen enkele reis was. Het ontwerp vraagt om
+     * "Openstaande aanvragen (n)" met het aantal over alle reizen heen.
+     */
+    public function test_trips_index_shows_the_total_pending_registrations_count_and_a_link(): void
+    {
+        $tripA = Trip::factory()->create();
+        $tripB = Trip::factory()->create();
+        $tripA->registrations()->attach(User::factory()->create(), ['status' => RegistrationStatus::Pending->value]);
+        $tripA->registrations()->attach(User::factory()->create(), ['status' => RegistrationStatus::Pending->value]);
+        $tripB->registrations()->attach(User::factory()->create(), ['status' => RegistrationStatus::Approved->value]);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->get(route('coordinator.trips.index'))
+            ->assertOk()
+            ->assertSee('Openstaande aanvragen (2)')
+            ->assertSee(route('coordinator.registrations.index'), false);
+    }
+
+    /** Zonder openstaande aanvragen toont de teller 0, maar de link blijft aanwezig. */
+    public function test_trips_index_shows_zero_pending_registrations_when_there_are_none(): void
+    {
+        Trip::factory()->create();
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->get(route('coordinator.trips.index'))
+            ->assertOk()
+            ->assertSee('Openstaande aanvragen (0)')
+            ->assertSee(route('coordinator.registrations.index'), false);
+    }
+
+    /**
+     * Eindreview-bevinding: capaciteit mag bij het bewerken van een bestaande
+     * activiteit niet lager gezet worden dan het aantal reeds gemaakte keuzes.
+     */
+    public function test_capacity_cannot_be_lowered_below_the_number_of_existing_choices(): void
+    {
+        $trip = Trip::factory()->create();
+        $day = $trip->days()->create(['date' => '2030-06-01']);
+        $activity = Activity::factory()->create(['trip_day_id' => $day->id, 'capacity' => 5]);
+        foreach (range(1, 3) as $i) {
+            ActivityChoice::create(['user_id' => User::factory()->create()->id, 'activity_id' => $activity->id]);
+        }
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->put(route('coordinator.trips.activities.update', [$trip, $activity]), [
+                'trip_day_id' => $day->id,
+                'name' => $activity->name,
+                'capacity' => 2,
+                'deadline' => $activity->deadline->format('Y-m-d H:i'),
+            ])
+            ->assertSessionHasErrors('capacity');
+
+        $this->assertSame(5, $activity->fresh()->capacity);
+    }
+
+    /** Capaciteit gelijk aan het aantal keuzes mag wel (grensgeval). */
+    public function test_capacity_may_be_lowered_to_exactly_the_number_of_existing_choices(): void
+    {
+        $trip = Trip::factory()->create();
+        $day = $trip->days()->create(['date' => '2030-06-01']);
+        $activity = Activity::factory()->create(['trip_day_id' => $day->id, 'capacity' => 5]);
+        foreach (range(1, 3) as $i) {
+            ActivityChoice::create(['user_id' => User::factory()->create()->id, 'activity_id' => $activity->id]);
+        }
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->put(route('coordinator.trips.activities.update', [$trip, $activity]), [
+                'trip_day_id' => $day->id,
+                'name' => $activity->name,
+                'capacity' => 3,
+                'deadline' => $activity->deadline->format('Y-m-d H:i'),
+            ])
+            ->assertSessionHas('success');
+
+        $this->assertSame(3, $activity->fresh()->capacity);
+    }
+
+    /**
+     * Eindreview-bevinding: capaciteit 0 op een bestaande activiteit (bv. data van
+     * vóór de validatie) mag het coördinatorscherm niet laten crashen op deling door
+     * nul.
+     */
+    public function test_activities_index_does_not_crash_when_capacity_is_zero(): void
+    {
+        $trip = Trip::factory()->create();
+        $day = $trip->days()->create(['date' => '2030-06-01']);
+        Activity::factory()->create(['trip_day_id' => $day->id, 'capacity' => 0]);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->get(route('coordinator.trips.activities.index', $trip))
+            ->assertOk();
+    }
 
     /** FE-06 happy path: reis + dagen aangemaakt */
     public function test_coordinator_can_create_trip_with_days(): void
@@ -42,7 +140,7 @@ class CoordinatorTest extends TestCase
     public function test_trip_with_participants_cannot_be_deleted(): void
     {
         $trip = Trip::factory()->create();
-        $trip->travelers()->attach(User::factory()->create());
+        $trip->registrations()->attach(User::factory()->create(), ['status' => \App\Enums\RegistrationStatus::Approved->value]);
 
         $this->actingAs(User::factory()->coordinator()->create())
             ->delete(route('coordinator.trips.destroy', $trip))
@@ -76,7 +174,7 @@ class CoordinatorTest extends TestCase
     {
         $trip = Trip::factory()->create();
         $traveler = User::factory()->create();
-        $trip->travelers()->attach($traveler);
+        $trip->registrations()->attach($traveler, ['status' => \App\Enums\RegistrationStatus::Approved->value]);
 
         $this->actingAs($traveler)->get(route('coordinator.trips.index'))->assertForbidden();
         $this->actingAs($traveler)->get(route('coordinator.trips.participants.index', $trip))->assertForbidden();
@@ -87,7 +185,7 @@ class CoordinatorTest extends TestCase
     {
         $trip = Trip::factory()->create();
         $traveler = User::factory()->create(['name' => 'Sam Test']);
-        $trip->travelers()->attach($traveler);
+        $trip->registrations()->attach($traveler, ['status' => \App\Enums\RegistrationStatus::Approved->value]);
         ChecklistItem::factory()->create(['user_id' => $traveler->id, 'trip_id' => $trip->id, 'checked' => true]);
         ChecklistItem::factory()->create(['user_id' => $traveler->id, 'trip_id' => $trip->id, 'checked' => false]);
 

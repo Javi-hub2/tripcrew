@@ -6,6 +6,61 @@
 @source '../**/*.js';
 
 @theme {
+    /* Instrument Sans wordt lokaal gebundeld via @fontsource (zie resources/js/app.js). */
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand: #0F766E;
+    --color-brand-dark: #115E59;
+    --color-brand-darker: #134E4A;
+    --color-sand: #FDF6EC;
+    --color-accent: #C2410C;
+    --color-accent-dark: #9A3412;
+    --color-success: #166534;
+    --color-danger: #B91C1C;
+
+    /* Reisposter-stijl: schaduwen in de huisstijlkleuren in plaats van grijs. */
+    --shadow-kaart: 0 12px 28px -14px rgb(19 78 74 / 0.4);
+    --shadow-gloed: 0 8px 18px -8px rgb(194 65 12 / 0.6);
+}
+
+@layer components {
+    /* Invoervelden: gedeeld door x-field en de paar velden met eigen opmaak. */
+    .veld {
+        @apply mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 shadow-sm transition
+            focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none;
+    }
+
+    /* Links en knoppen op de donkere hero: eigen focusring, zichtbaar op teal. */
+    .focusring {
+        @apply rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white
+            focus-visible:ring-offset-2 focus-visible:ring-offset-brand-darker;
+    }
+}
+
+/* Capaciteits- en voortgangsbalken lopen vol bij het laden. */
+@keyframes vollopen {
+    from {
+        width: 0;
+    }
+}
+
+.balk-vul {
+    animation: vollopen 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Rij die na goedkeuren/afwijzen wegschuift (resources/js/snel.js). */
+.snel-weg {
+    opacity: 0;
+    transform: translateX(1.5rem);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }

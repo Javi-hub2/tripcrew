@@ -1,15 +1,24 @@
 @extends('layouts.app')
 @section('title', 'Activiteit toevoegen')
 
+@section('eyebrow', $trip->name)
+@section('hero')
+    @include('coordinator._nav')
+@endsection
+
 @section('content')
-<h1 class="mb-4 text-2xl font-semibold text-[#0C4A6E]">Activiteit toevoegen – {{ $trip->name }}</h1>
 @if ($days->isEmpty())
-    <div role="alert" class="flex items-center gap-2 rounded-lg border border-[#F97316]/40 bg-orange-50 px-4 py-3 text-orange-900">
-        <span aria-hidden="true">&#9888;</span> <span>Deze reis heeft nog geen dagen. Controleer de begin- en einddatum.</span>
+    <div role="alert" class="flex items-center gap-3 rounded-2xl border-l-4 border-accent bg-white px-4 py-3 text-accent-dark shadow-kaart">
+        <span aria-hidden="true" class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent/10 font-bold">&#9888;</span>
+        <span>Deze reis heeft nog geen dagen. Controleer de begin- en einddatum.</span>
     </div>
 @else
-    <form method="POST" action="{{ route('coordinator.trips.activities.store', $trip) }}" class="max-w-xl space-y-4 rounded-xl bg-white p-6 shadow">
-        @include('coordinator.activities._form')
+    <form method="POST" action="{{ route('coordinator.trips.activities.store', $trip) }}" class="max-w-2xl">
+        <x-card>
+            <div class="space-y-4">
+                @include('coordinator.activities._form')
+            </div>
+        </x-card>
     </form>
 @endif
 @endsection

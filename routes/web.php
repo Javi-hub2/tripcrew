@@ -3,22 +3,33 @@
 use App\Http\Controllers\ActivityChoiceController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\Coordinator\ActivityController;
 use App\Http\Controllers\Coordinator\ParticipantController;
+use App\Http\Controllers\Coordinator\RegistrationController;
 use App\Http\Controllers\Coordinator\TripController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TravelerProgramController;
+use App\Http\Controllers\TripRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 // --- Auth (FE-01, FE-02) ---
+// De throttle-limieten zijn gedefinieerd in AppServiceProvider::configureRateLimiters().
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
     Route::get('/inloggen', [LoginController::class, 'show'])->name('login');
-    Route::post('/inloggen', [LoginController::class, 'login']);
+    Route::post('/inloggen', [LoginController::class, 'login'])->middleware('throttle:inloggen');
     Route::get('/activeren/{token}', [ActivationController::class, 'show'])->name('activation.show');
     Route::post('/activeren/{token}', [ActivationController::class, 'activate'])->name('activation.activate');
+    Route::get('/registreren', [RegisterController::class, 'show'])->name('register');
+    Route::post('/registreren', [RegisterController::class, 'store'])->name('register.store')->middleware('throttle:registreren');
+    Route::get('/wachtwoord-vergeten', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/wachtwoord-vergeten', [PasswordResetController::class, 'email'])->name('password.email')->middleware('throttle:wachtwoord-vergeten');
+    Route::get('/wachtwoord-herstellen/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
+    Route::post('/wachtwoord-herstellen', [PasswordResetController::class, 'update'])->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {
@@ -27,6 +38,9 @@ Route::middleware('auth')->group(function () {
 
     // --- Reiziger (FE-03, FE-04, FE-05) ---
     Route::middleware('role:reiziger')->group(function () {
+        Route::get('/reizen', [TripRegistrationController::class, 'index'])->name('traveler.registrations.index');
+        Route::post('/reizen/{trip}/inschrijven', [TripRegistrationController::class, 'store'])->name('traveler.registrations.store');
+
         Route::prefix('reizen/{trip}')->name('traveler.')->group(function () {
             Route::get('/', [TravelerProgramController::class, 'dashboard'])->name('dashboard');
             Route::get('/activiteiten/{tripDay?}', [TravelerProgramController::class, 'activities'])->name('activities');
@@ -42,6 +56,10 @@ Route::middleware('auth')->group(function () {
     // --- Coördinator (FE-06, FE-07, FE-08) ---
     Route::middleware('role:coordinator')->prefix('coordinator')->name('coordinator.')->group(function () {
         Route::resource('trips', TripController::class)->except(['show']);
+
+        Route::get('aanvragen', [RegistrationController::class, 'index'])->name('registrations.index');
+        Route::patch('aanvragen/{trip}/{user}/goedkeuren', [RegistrationController::class, 'approve'])->name('registrations.approve');
+        Route::patch('aanvragen/{trip}/{user}/afwijzen', [RegistrationController::class, 'reject'])->name('registrations.reject');
 
         Route::prefix('trips/{trip}')->name('trips.')->group(function () {
             Route::get('activiteiten', [ActivityController::class, 'index'])->name('activities.index');

@@ -152,8 +152,8 @@ Als tokens in `resources/css/app.css`, zodat één plek de hele app kleurt:
 | `--color-brand` | `#0F766E` zeegroen | navigatie, koppen |
 | `--color-brand-dark` | `#115E59` | hover |
 | `--color-sand` | `#FDF6EC` | paginaachtergrond |
-| `--color-accent` | `#EA580C` oranje | primaire knoppen, nadruk |
-| `--color-success` | `#15803D` | geslaagd-meldingen |
+| `--color-accent` | `#C2410C` oranje | primaire knoppen, nadruk |
+| `--color-success` | `#166534` | geslaagd-meldingen |
 | `--color-danger` | `#B91C1C` | foutmeldingen |
 
 Contrast van tekst op deze kleuren moet minimaal AA (4.5:1) halen.

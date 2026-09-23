@@ -2,8 +2,11 @@
 @section('title', 'Nieuwe reis')
 
 @section('content')
-<h1 class="mb-4 text-2xl font-semibold text-[#0C4A6E]">Nieuwe reis</h1>
-<form method="POST" action="{{ route('coordinator.trips.store') }}" class="max-w-xl space-y-4 rounded-xl bg-white p-6 shadow">
-    @include('coordinator.trips._form')
+<form method="POST" action="{{ route('coordinator.trips.store') }}" class="max-w-2xl">
+    <x-card>
+        <div class="space-y-4">
+            @include('coordinator.trips._form')
+        </div>
+    </x-card>
 </form>
 @endsection

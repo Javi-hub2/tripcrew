@@ -87,9 +87,9 @@ Onder het bestaande `@theme`-blok, zodat Tailwind er klassen als `bg-brand` en `
     --color-brand: #0F766E;
     --color-brand-dark: #115E59;
     --color-sand: #FDF6EC;
-    --color-accent: #EA580C;
-    --color-accent-dark: #C2410C;
-    --color-success: #15803D;
+    --color-accent: #C2410C;
+    --color-accent-dark: #9A3412;
+    --color-success: #166534;
     --color-danger: #B91C1C;
 }
 ```
@@ -466,13 +466,37 @@ Voeg bovenaan toe: `use App\Enums\RegistrationStatus;`
 
 `hasParticipants()` blijft `$this->travelers()->exists()` — een reis met alleen openstaande aanvragen mag dus wél verwijderd worden. Dat is de bedoeling.
 
-- [ ] **Step 7: Policy bijwerken**
+- [ ] **Step 7: Beide policies bijwerken**
 
 In `app/Policies/TripPolicy.php`, methode `view()`:
 
 ```php
         // Reiziger mag alleen een reis zien waarvoor zijn inschrijving is goedgekeurd.
         return $user->approvedTrips()->whereKey($trip->id)->exists();
+```
+
+En in `app/Policies/ActivityPolicy.php:37` staat dezelfde lidmaatschapscontrole. Zonder
+deze wijziging kan een reiziger met een aanvraag in behandeling alsnog een activiteit
+kiezen:
+
+```php
+        return $user->approvedTrips()->whereKey($activity->tripDay->trip_id)->exists();
+```
+
+Voeg deze test toe aan `tests/Feature/TripRegistrationTest.php`:
+
+```php
+    public function test_pending_traveler_cannot_choose_an_activity(): void
+    {
+        $activity = \App\Models\Activity::factory()->create();
+        $trip = $activity->tripDay->trip;
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+
+        $this->actingAs($traveler)
+            ->post(route('activities.choose', $activity))
+            ->assertForbidden();
+    }
 ```
 
 - [ ] **Step 8: Bestaande attach-plekken bijwerken**
@@ -626,7 +650,9 @@ class TripRegistrationController extends Controller
 
         return view('traveler.register-trip', [
             'trips' => Trip::orderBy('start_date')->get(),
-            'registrations' => $user->trips()->pluck('status', 'trips.id'),
+            // Kolom expliciet kwalificeren: 'status' alleen zou nu toevallig werken
+            // omdat trips geen kolom status heeft.
+            'registrations' => $user->trips()->pluck('trip_user.status', 'trips.id'),
         ]);
     }
 
@@ -1169,22 +1195,22 @@ class ActivationMail extends Mailable
 `resources/views/emails/activation.blade.php`:
 
 ```blade
-<x-mail::layout>
+<x-app-mail::layout>
     <p>Hallo {{ $name }},</p>
     <p>Je account voor TripCrew staat klaar. Stel hieronder je eigen wachtwoord in.</p>
     <p style="margin:24px 0;">
-        <a href="{{ $url }}" style="background:#EA580C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
+        <a href="{{ $url }}" style="background:#C2410C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
             Wachtwoord instellen
         </a>
     </p>
     <p style="font-size:13px;color:#64748B;">Werkt de knop niet? Kopieer deze link naar je browser:<br>{{ $url }}</p>
-</x-mail::layout>
+</x-app-mail::layout>
 ```
 
-De template gebruikt de anonieme component `emails.layout` via `<x-mail::layout>`. Registreer daarvoor de namespace in `app/Providers/AppServiceProvider.php` in `boot()`:
+De template gebruikt de anonieme component `emails.layout` via `<x-app-mail::layout>`. Registreer daarvoor de namespace in `app/Providers/AppServiceProvider.php` in `boot()`:
 
 ```php
-        \Illuminate\Support\Facades\Blade::anonymousComponentNamespace('emails', 'mail');
+        \Illuminate\Support\Facades\Blade::anonymousComponentNamespace('emails', 'app-mail');
 ```
 
 - [ ] **Step 6: Controller schrijven**
@@ -1471,18 +1497,18 @@ De tests gebruiken `ResetPassword::class` in `assertSentTo`; deze klasse erft da
 `resources/views/emails/password-reset.blade.php`:
 
 ```blade
-<x-mail::layout>
+<x-app-mail::layout>
     <p>Hallo {{ $name }},</p>
     <p>Je hebt een nieuw wachtwoord aangevraagd voor TripCrew.</p>
     <p style="margin:24px 0;">
-        <a href="{{ $url }}" style="background:#EA580C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
+        <a href="{{ $url }}" style="background:#C2410C;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">
             Nieuw wachtwoord instellen
         </a>
     </p>
     <p style="font-size:13px;color:#64748B;">
         Deze link verloopt na {{ $minutes }} minuten. Heb je dit niet aangevraagd, dan hoef je niets te doen.
     </p>
-</x-mail::layout>
+</x-app-mail::layout>
 ```
 
 - [ ] **Step 5: `ResetPasswordRequest` schrijven**
