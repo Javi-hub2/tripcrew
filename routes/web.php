@@ -16,17 +16,18 @@ use App\Http\Controllers\TripRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 // --- Auth (FE-01, FE-02) ---
+// De throttle-limieten zijn gedefinieerd in AppServiceProvider::configureRateLimiters().
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
     Route::get('/inloggen', [LoginController::class, 'show'])->name('login');
-    Route::post('/inloggen', [LoginController::class, 'login']);
+    Route::post('/inloggen', [LoginController::class, 'login'])->middleware('throttle:inloggen');
     Route::get('/activeren/{token}', [ActivationController::class, 'show'])->name('activation.show');
     Route::post('/activeren/{token}', [ActivationController::class, 'activate'])->name('activation.activate');
     Route::get('/registreren', [RegisterController::class, 'show'])->name('register');
-    Route::post('/registreren', [RegisterController::class, 'store'])->name('register.store');
+    Route::post('/registreren', [RegisterController::class, 'store'])->name('register.store')->middleware('throttle:registreren');
     Route::get('/wachtwoord-vergeten', [PasswordResetController::class, 'request'])->name('password.request');
-    Route::post('/wachtwoord-vergeten', [PasswordResetController::class, 'email'])->name('password.email');
+    Route::post('/wachtwoord-vergeten', [PasswordResetController::class, 'email'])->name('password.email')->middleware('throttle:wachtwoord-vergeten');
     Route::get('/wachtwoord-herstellen/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
     Route::post('/wachtwoord-herstellen', [PasswordResetController::class, 'update'])->name('password.update');
 });

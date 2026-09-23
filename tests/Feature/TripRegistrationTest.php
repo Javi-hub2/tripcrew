@@ -6,6 +6,7 @@ use App\Enums\RegistrationStatus;
 use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class TripRegistrationTest extends TestCase
@@ -281,6 +282,51 @@ class TripRegistrationTest extends TestCase
      * simuleren we hier sequentieel: de tweede beslissing moet de "al afgehandeld"-
      * melding krijgen en decided_by/status van de eerste moeten intact blijven.
      */
+    /**
+     * Eindreview-punt 6: de beslissing moet in één voorwaardelijke UPDATE gebeuren.
+     * Deze test bootst de race na: zodra de controller de aanvraag opzoekt, beslist
+     * een tweede coördinator ertussendoor. Met een lees-dan-schrijf-implementatie
+     * overschrijft de eerste coördinator die beslissing alsnog.
+     */
+    public function test_a_decision_made_between_lookup_and_write_is_not_overwritten(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Pending->value]);
+        $first = User::factory()->coordinator()->create();
+        $second = User::factory()->coordinator()->create();
+
+        $raceGereden = false;
+        DB::listen(function ($query) use ($trip, $traveler, $second, &$raceGereden) {
+            if ($raceGereden || ! str_contains($query->sql, 'trip_user') || ! str_starts_with(strtolower($query->sql), 'select')) {
+                return;
+            }
+
+            // De tweede coördinator is net iets eerder klaar.
+            $raceGereden = true;
+            DB::table('trip_user')
+                ->where('trip_id', $trip->id)
+                ->where('user_id', $traveler->id)
+                ->update([
+                    'status' => RegistrationStatus::Rejected->value,
+                    'decided_at' => now(),
+                    'decided_by' => $second->id,
+                ]);
+        });
+
+        $this->actingAs($first)
+            ->patch(route('coordinator.registrations.approve', [$trip, $traveler]))
+            ->assertSessionHas('error', 'Deze aanvraag is al afgehandeld.');
+
+        $this->assertTrue($raceGereden, 'De race is niet nagebootst; de test zegt dan niets.');
+        $this->assertDatabaseHas('trip_user', [
+            'trip_id' => $trip->id,
+            'user_id' => $traveler->id,
+            'status' => RegistrationStatus::Rejected->value,
+            'decided_by' => $second->id,
+        ]);
+    }
+
     public function test_two_coordinators_deciding_on_the_same_pending_registration_only_one_wins(): void
     {
         $trip = Trip::factory()->create();

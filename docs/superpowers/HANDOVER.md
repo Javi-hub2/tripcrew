@@ -1,6 +1,6 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, na de scoped hercontrole over de fixdiff.
+Laatst bijgewerkt: 2026-09-23, na het afmaken van de fixronde (punt 4 t/m 9).
 
 ## Wat wordt hier gebouwd
 
@@ -19,9 +19,9 @@ brede review over de hele branch.
 
 ## Waar staat het nu
 
-Branch: `feature/registratie-mail-reset`. Alle acht taken zijn af en gereviewd. De eindreview over
-de hele branch is gedaan; van de negen punten daaruit staan er nog **drie open** (punt 4, 5 en 6 —
-zie hieronder). De suite is groen en de assets zijn gebouwd.
+Branch: `feature/registratie-mail-reset`. Alle acht taken zijn af en gereviewd, en alle negen
+punten uit de eindreview zijn opgelost. De suite is groen (65 tests) en de assets zijn gebouwd.
+Wat nu nog openstaat is een keuze, geen gebrek: punt A en B hieronder, en de restpunten.
 
 | Taak | Status | Commits |
 |---|---|---|
@@ -33,12 +33,12 @@ zie hieronder). De suite is groen en de assets zijn gebouwd.
 | 6 Zelfregistratie + activatiemail | klaar | `8529329..0fcf303` |
 | 7 Wachtwoord vergeten | klaar | `0fcf303..fb16db9` |
 | 8 Mailconfiguratie, README, opruimen | klaar | `9aa90c2..2fad504` |
-| Fixronde na eindreview | punt 1-3 en 7-9 klaar, **4-6 niet, zie hieronder** | `93c99f3`, `e1fb99a` + docs-commit erna |
+| Fixronde na eindreview | alle negen punten klaar | `93c99f3`, `e1fb99a`, plus de commits erna |
 
 ## Stand van de fixronde
 
-De eindreview leverde negen punten op. **Punt 1, 2, 3, 7, 8 en 9 zijn opgelost en gereviewd.**
-Teststand: **59 slagen, 0 falen**, en `npm run build` is gedaan.
+De eindreview leverde negen punten op; **alle negen zijn opgelost**. Teststand: **65 slagen,
+0 falen**, en `npm run build` is gedaan.
 
 Wat er in punt 7, 8 en 9 is opgelost (commit `e1fb99a`):
 
@@ -51,35 +51,31 @@ Wat er in punt 7, 8 en 9 is opgelost (commit `e1fb99a`):
 9. **De aanvraagdatum werd opgeslagen maar nergens getoond.** Staat nu onder het e-mailadres op
    `coordinator/registrations/index`, in `d-m-Y`, en alleen als `requested_at` gevuld is.
 
-## Hier ga je verder: punt 4, 5 en 6 zijn NOOIT geland
+## Punt 4, 5 en 6 — alsnog gedaan
 
-De vorige sessie schreef in deze overdracht dat punt 1 t/m 6 gedaan waren. De hercontrole over
-`git diff fb16db9..HEAD` laat zien dat **punt 4, 5 en 6 niet in de code staan**. Punt 1, 2 en 3
-staan er wel. Wat er nog moet gebeuren:
+De vorige sessie schreef dat punt 1 t/m 6 klaar waren; de hercontrole liet zien dat 4, 5 en 6 niet
+in de code stonden. Ze zijn daarna alsnog test-first gebouwd:
 
-**4. Validatiefouten zonder eigen bericht zijn nog Engels.** Er is géén `lang/`-map in het project.
-Laravel 11 levert die niet mee, dus alles waarvoor geen eigen `messages()` bestaat komt in het
-Engels terug. Publiceer de Nederlandse regels (`php artisan lang:publish` en dan vertalen, of een
-eigen `lang/nl/validation.php`) en zet `APP_LOCALE=nl` in `.env`. Test: post een leeg formulier en
-verwacht een Nederlandse melding.
+**4. Nederlandse validatiemeldingen.** `lang/nl/validation.php` bevat de regels die dit project
+gebruikt plus `attributes`, zodat `:attribute` "e-mailadres" wordt in plaats van "email". Wat
+ontbreekt valt terug op `APP_FALLBACK_LOCALE=en`. `APP_LOCALE=nl` stond al in `.env` en staat nu ook
+in `.env.example`. Tests: `tests/Feature/LocalizationTest.php`.
 
-**5. Er is geen rate limiting op inloggen en registreren.** `throttle` komt in `routes/web.php`
-nergens voor. Zonder limiet kan iemand ongelimiteerd wachtwoorden of e-mailadressen aftasten. Zet
-`throttle:...` op de POST-routes van login, registratie en wachtwoordherstel, met een Nederlandse
-melding bij te veel pogingen.
+**5. Rate limiting.** Drie benoemde limieten in `AppServiceProvider::configureRateLimiters()`, elk
+5 per minuut, aangehaakt met `throttle:` in `routes/web.php`. Inloggen telt per e-mailadres én IP
+(daar wordt één account bestookt, en een limiet op IP alleen zou iedereen achter hetzelfde
+schoolnetwerk buitensluiten); registreren en wachtwoord-vergeten tellen per IP, want daar is de
+aanval juist het aflopen van veel verschillende adressen. Over de limiet volgt een redirect terug
+met de melding "Te veel pogingen. Wacht een minuut en probeer het opnieuw.", niet Laravels kale
+429-pagina. Tests: `tests/Feature/RateLimitTest.php`.
 
-**6. De race bij twee coördinatoren is niet afgevangen.**
-`Coordinator\RegistrationController::decide()` leest de status en schrijft daarna, zonder transactie
-en zonder lock. Twee gelijktijdige beslissingen kunnen beide door de `Pending`-controle glippen; de
-laatste schrijver wint en beide coördinatoren zien "gelukt". Los het op met een voorwaardelijke
-update in één statement (alleen bijwerken zolang de status nog `pending` is) en beslis op het aantal
-geraakte rijen, of met `lockForUpdate()` binnen een transactie.
-De bestaande test `test_two_coordinators_deciding_on_the_same_pending_registration_only_one_wins`
-dekt dit **niet**: hij doet de twee beslissingen na elkaar en blijft dus ook zonder atomiciteit
-groen. Er is een echte gelijktijdigheidstest nodig (of tenminste een test die de conditionele
-update aantoont), net als bij TE-05.
-
-Let op: `lockForUpdate()` werkt op MariaDB, niet op de SQLite waarop de tests draaien.
+**6. De race bij twee coördinatoren.** `RegistrationController::decide()` doet nu één
+voorwaardelijke UPDATE (`where status = pending`) en beslist op het aantal geraakte rijen; de losse
+leescontrole is weg. Dit werkt ook op SQLite, dus er is geen `lockForUpdate()` nodig.
+De test `test_a_decision_made_between_lookup_and_write_is_not_overwritten` bootst de race na met
+`DB::listen`: zodra de controller de aanvraag opzoekt, beslist een tweede coördinator ertussendoor.
+Op de oude implementatie faalt die test, op de nieuwe niet — anders dan de oudere test
+`..._only_one_wins`, die de twee beslissingen na elkaar doet en ook zonder atomiciteit groen bleef.
 
 ## Twee punten die bewust NIET zijn opgelost — jouw keuze
 

@@ -8,6 +8,7 @@ use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 // FE-06: de coördinator beslist wie er meegaat.
@@ -35,20 +36,27 @@ class RegistrationController extends Controller
 
     private function decide(Trip $trip, User $user, RegistrationStatus $status, string $message): RedirectResponse
     {
-        $registration = $trip->registrations()->where('user_id', $user->id)->first();
+        abort_unless($trip->registrations()->where('user_id', $user->id)->exists(), 404);
 
-        abort_unless($registration !== null, 404);
+        // Eén voorwaardelijke UPDATE: alleen bijwerken zolang de aanvraag nog open
+        // staat. Lezen-en-dan-schrijven liet twee coördinatoren die tegelijk beslissen
+        // allebei door de controle glippen, waarna de laatste schrijver won en beiden
+        // "gelukt" te zien kregen. Het aantal geraakte rijen is nu de beslissing.
+        $bijgewerkt = DB::table('trip_user')
+            ->where('trip_id', $trip->id)
+            ->where('user_id', $user->id)
+            ->where('status', RegistrationStatus::Pending->value)
+            ->update([
+                'status' => $status->value,
+                'decided_at' => now(),
+                'decided_by' => Auth::id(),
+                'updated_at' => now(),
+            ]);
 
-        if ($registration->pivot->status !== RegistrationStatus::Pending->value) {
+        if ($bijgewerkt === 0) {
             return redirect()->route('coordinator.registrations.index')
                 ->with('error', 'Deze aanvraag is al afgehandeld.');
         }
-
-        $trip->registrations()->updateExistingPivot($user->id, [
-            'status' => $status->value,
-            'decided_at' => now(),
-            'decided_by' => Auth::id(),
-        ]);
 
         return redirect()->route('coordinator.registrations.index')->with('success', $message);
     }
