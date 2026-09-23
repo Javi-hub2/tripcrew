@@ -147,8 +147,10 @@ zodat juist naadfouten opvallen. Gecontroleerd met een mutatie: een kapotte acti
 
 ## Overige restpunten uit de eindreview (niet blokkerend)
 
-- `Coordinator\ActivityController::update()` mist een `authorize()`-aanroep die de andere methodes
-  wel hebben. Functioneel afgedekt door de rol-middleware.
+- Opgelost (2026-09-23): `Coordinator\ActivityController::update()` roept nu ook
+  `authorize('update', $activity)` aan. Test: `test_updating_an_activity_goes_through_the_activity_policy`
+  vervangt de policy door een die alles weigert, want met een reiziger was het verschil niet te
+  zien (rol-middleware en `StoreActivityRequest` weigeren die al).
 - Dode code opgeruimd (2026-09-23): `RegistrationStatus::label()`, `ActivityChoicePolicy::view()`,
   `ActivityPolicy::manage()`, `Activity::isFull()`, de ongebruikte `$trip` in
   `ActivityChoiceController::store()`, de ongebruikte `MustVerifyEmail`-import in `User.php`, en
