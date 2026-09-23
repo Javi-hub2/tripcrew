@@ -1,34 +1,20 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, na het pushen naar GitHub en het openen van PR #1.
+Laatst bijgewerkt: 2026-09-23, nadat de mail echt verstuurd en getest is.
 
-## Hier ga je verder: de mail echt laten versturen
+## Stand: de mail wordt echt verstuurd
 
-Alle negen reviewpunten zijn af en alles staat op GitHub. Eén stap ligt klaar en wacht op de
-opdrachtgever:
+Alle negen reviewpunten zijn af, en sinds 2026-09-23 gaat de mail echt via Gmail
+(`MAIL_MAILER=smtp`, met een app-wachtwoord in `.env`). Getest met een echte registratie: de
+activatiemail kwam aan en de activatielink werkte.
 
-1. **Jij (opdrachtgever):** maak een Gmail **app-wachtwoord** aan (Google-account → Beveiliging →
-   App-wachtwoorden; tweestapsverificatie moet aan staan). Gebruik een persoonlijk Gmail-account,
-   niet het Yuverta-adres: dat is Microsoft 365 en blokkeert SMTP. Zet daarna in
-   `C:\xampp\htdocs\tripcrew\.env`:
-
-   ```
-   MAIL_MAILER=smtp
-   MAIL_USERNAME=jouwadres@gmail.com
-   MAIL_PASSWORD=<app-wachtwoord van 16 tekens, zonder spaties>
-   MAIL_FROM_ADDRESS=jouwadres@gmail.com
-   ```
-
-   De instructie staat ook als commentaar boven `MAIL_MAILER` in `.env` zelf. `.env` staat in
-   `.gitignore` en gaat dus nooit mee naar de openbare repo.
-
-2. **Daarna:** `php artisan config:clear`, en een echte registratie doen op een adres dat de
-   opdrachtgever noemt. Controleren of de mail aankomt (ook de spammap) en of de activatielink het
-   doet. Zolang stap 1 niet gedaan is blijft `MAIL_MAILER=log` en komen de mails in
-   `storage/logs/laravel.log` — de flow werkt dan wel, de bezorging niet.
-
-3. Lees vóór die omzetting punt A hieronder: met echte bezorging wordt de responstijd bij
-   registreren en wachtwoordherstel weer een signaal of een adres een account heeft.
+- `.env` staat in `.gitignore`; het app-wachtwoord gaat dus nooit mee naar de openbare repo.
+- Terug naar mails in `storage/logs/laravel.log`: zet `MAIL_MAILER=log` en draai
+  `php artisan config:clear`.
+- In de lokale database staat een testaccount "Javi Test" van die proef.
+- **Volgende keuze:** punt A hieronder. Met echte bezorging is de responstijd bij registreren
+  (±1,9 s voor een nieuw adres) en wachtwoordherstel weer een signaal of een adres een account
+  heeft. Oplossen vóór de site online gaat.
 
 ## Waar dit op GitHub staat
 
@@ -117,7 +103,7 @@ Op de oude implementatie faalt die test, op de nieuwe niet — anders dan de oud
 **A. Zodra echte Gmail-bezorging aan staat, lekt de responstijd weer.**
 Bij registreren en bij wachtwoordherstel doet alleen het pad met een bestaand adres een
 netwerkverbinding naar Gmail. Dat kost honderden milliseconden, waardoor opnieuw meetbaar wordt of
-een adres een account heeft. Met `MAIL_MAILER=log` (de huidige stand) is er niets aan de hand.
+een adres een account heeft. Met `MAIL_MAILER=log` is er niets aan de hand, maar de mail staat nu op `smtp`.
 Oplossen betekent de mails in een wachtrij zetten (`ShouldQueue` plus een permanent draaiende
 `artisan queue:work`), wat het opzetten van het project zwaarder maakt. Dat is een afweging, geen
 vanzelfsprekendheid.
@@ -188,15 +174,6 @@ zonder dat vertrouwen bouwt `route()` in `ActivationMail` een link met `http://`
 en mailen we bezoekers een kapotte activatielink. `tests/Feature/ActivationLinkTest.php` dekt beide
 kanten af: met proxyheaders wordt de link `https://<domein>/...`, zonder blijft hij gewoon http.
 Staat de app achter iets anders dan Cloudflare, beperk `at:` dan tot de IP-reeksen van die proxy.
-
-## Openstaand voor de opdrachtgever
-
-**Gmail app-wachtwoord.** Zet het in `.env` bij `MAIL_PASSWORD`, zet `MAIL_USERNAME` en
-`MAIL_FROM_ADDRESS` op hetzelfde Gmail-adres, en zet dan `MAIL_MAILER=smtp` (daarna
-`php artisan config:clear`). Aanmaken
-via Google-account → Beveiliging → App-wachtwoorden (tweestapsverificatie moet aan staan). Gebruik
-een persoonlijk Gmail-account, niet het Yuverta-schoolaccount: dat is Microsoft 365 en blokkeert
-SMTP. Tot dan komen de mails in `storage/logs/laravel.log`. Lees daarbij punt A hierboven.
 
 ## Beslissingen die onderweg genomen zijn
 
