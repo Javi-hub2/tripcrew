@@ -6,7 +6,9 @@ use App\Enums\RegistrationStatus;
 use App\Models\Activity;
 use App\Models\ActivityChoice;
 use App\Models\ChecklistItem;
+use App\Models\ProgramItem;
 use App\Models\Trip;
+use App\Models\TripDay;
 use App\Models\User;
 use DOMDocument;
 use DOMXPath;
@@ -177,5 +179,47 @@ class SnelleHandelingenTest extends TestCase
 
         $melding = $this->xpath($na->getContent())->query("//*[@id='meldingen']//*[@role='status']");
         $this->assertSame(1, $melding->length, 'De succesmelding staat niet in #meldingen.');
+    }
+
+    public function test_programma_toevoegen_en_verwijderen(): void
+    {
+        $coordinator = User::factory()->coordinator()->create();
+        $trip = Trip::factory()->create();
+        $day = TripDay::factory()->create(['trip_id' => $trip->id]);
+        $item = ProgramItem::factory()->create(['trip_day_id' => $day->id]);
+        $pagina = route('coordinator.trips.program.index', $trip);
+        $html = $this->actingAs($coordinator)->get($pagina)->getContent();
+
+        $this->assertSnelFormulier($html, 'programma', route('coordinator.trips.program.store', [$trip, $day]));
+        $this->assertSnelFormulier($html, 'programma', route('coordinator.trips.program.destroy', [$trip, $item]));
+
+        $na = $this->from($pagina)->followingRedirects()
+            ->post(route('coordinator.trips.program.store', [$trip, $day]), ['time' => '12:00', 'title' => 'Lunch op het strand']);
+        $na->assertOk()->assertSee('Lunch op het strand');
+        $this->assertBlok($na->getContent(), 'programma');
+
+        $na = $this->from($pagina)->followingRedirects()->delete(route('coordinator.trips.program.destroy', [$trip, $item]));
+        $na->assertOk();
+        $this->assertBlok($na->getContent(), 'programma');
+    }
+
+    public function test_validatiefout_bij_programma_staat_alleen_onder_de_verstuurde_dag(): void
+    {
+        $coordinator = User::factory()->coordinator()->create();
+        $trip = Trip::factory()->create();
+        $eerste = TripDay::factory()->create(['trip_id' => $trip->id, 'date' => '2030-06-01']);
+        $tweede = TripDay::factory()->create(['trip_id' => $trip->id, 'date' => '2030-06-02']);
+        $pagina = route('coordinator.trips.program.index', $trip);
+
+        $na = $this->actingAs($coordinator)->from($pagina)->followingRedirects()
+            ->post(route('coordinator.trips.program.store', [$trip, $tweede]), ['dag' => $tweede->id, 'time' => '', 'title' => 'Zonder tijd']);
+
+        $xpath = $this->xpath($na->getContent());
+        $formulier = fn (TripDay $day) => "//*[@id='programma']//form[@action='".route('coordinator.trips.program.store', [$trip, $day])."']";
+
+        $this->assertSame(0, $xpath->query($formulier($eerste)."//*[contains(@class, 'text-danger')]")->length, 'Fout staat ook bij de eerste dag.');
+        $this->assertGreaterThan(0, $xpath->query($formulier($tweede)."//*[contains(@class, 'text-danger')]")->length, 'Fout ontbreekt bij de tweede dag.');
+        $this->assertSame('Zonder tijd', $xpath->query($formulier($tweede)."//input[@name='title']")->item(0)->getAttribute('value'));
+        $this->assertSame('', $xpath->query($formulier($eerste)."//input[@name='title']")->item(0)->getAttribute('value'));
     }
 }

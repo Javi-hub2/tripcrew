@@ -98,6 +98,9 @@ return [
         'title' => 'titel',
         'trip_day_id' => 'dag',
         'label' => 'checklist-item',
+        'practical_info' => 'praktische informatie',
+        'time' => 'tijd',
+        'location' => 'locatie',
         'token' => 'token',
     ],
 ];

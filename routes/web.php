@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\Coordinator\ActivityController;
 use App\Http\Controllers\Coordinator\ParticipantController;
+use App\Http\Controllers\Coordinator\ProgramItemController;
 use App\Http\Controllers\Coordinator\RegistrationController;
 use App\Http\Controllers\Coordinator\TripController;
 use App\Http\Controllers\DashboardController;
@@ -70,6 +71,13 @@ Route::middleware('auth')->group(function () {
             Route::delete('activiteiten/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
 
             Route::get('deelnemers', [ParticipantController::class, 'index'])->name('participants.index');
+
+            // Programmaonderdelen per dag (briefing: "reizen, dagen en programmaonderdelen beheren").
+            Route::get('programma', [ProgramItemController::class, 'index'])->name('program.index');
+            Route::post('dagen/{tripDay}/programma', [ProgramItemController::class, 'store'])->name('program.store');
+            Route::get('programma/{programItem}/bewerken', [ProgramItemController::class, 'edit'])->name('program.edit');
+            Route::put('programma/{programItem}', [ProgramItemController::class, 'update'])->name('program.update');
+            Route::delete('programma/{programItem}', [ProgramItemController::class, 'destroy'])->name('program.destroy');
         });
     });
 });

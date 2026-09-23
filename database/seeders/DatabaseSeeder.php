@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Barcelona Zomertrip',
             'start_date' => now()->toDateString(),          // start vandaag, zodat FE-03 direct iets toont
             'end_date' => now()->addDays(4)->toDateString(),
+            'practical_info' => "Verzamelen om 07:00 bij de hoofdingang van school.\nVerblijf: Hostel Gràcia, Carrer de Verdi 12.\nNoodnummer begeleiding: 06-12345678 (fictief).\nNeem je ID-kaart en EHIC-pas mee.",
         ]);
 
         $days = collect(Carbon::parse($trip->start_date)->toPeriod($trip->end_date))

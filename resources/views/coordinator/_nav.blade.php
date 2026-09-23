@@ -2,6 +2,7 @@
 <nav class="mt-6 flex flex-wrap gap-2 text-sm" aria-label="Reisbeheer">
     @foreach ([
         ['coordinator.trips.edit', route('coordinator.trips.edit', $trip), 'Reis bewerken'],
+        ['coordinator.trips.program.*', route('coordinator.trips.program.index', $trip), 'Programma'],
         ['coordinator.trips.activities.*', route('coordinator.trips.activities.index', $trip), 'Activiteiten'],
         ['coordinator.trips.participants.*', route('coordinator.trips.participants.index', $trip), 'Deelnemers'],
     ] as [$patroon, $url, $label])

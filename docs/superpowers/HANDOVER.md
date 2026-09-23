@@ -121,6 +121,28 @@ De test `test_a_decision_made_between_lookup_and_write_is_not_overwritten` boots
 Op de oude implementatie faalt die test, op de nieuwe niet — anders dan de oudere test
 `..._only_one_wins`, die de twee beslissingen na elkaar doet en ook zonder atomiciteit groen bleef.
 
+## Toets aan de briefing: programma en praktische informatie toegevoegd
+
+Bij het naast elkaar leggen van de briefing en de app ontbraken twee gevraagde onderdelen:
+
+- **Programmaonderdelen beheren.** Nieuw tabblad *Programma* in de reisnavigatie
+  (`Coordinator/ProgramItemController`). Per dag toevoegen (zonder herladen, blok `#programma`),
+  bewerken (ook naar een andere dag van dezelfde reis) en verwijderen. Validatiefouten staan alleen
+  onder het formulier van de dag die verstuurd is: elke dag heeft een eigen foutenzak `dag<id>`
+  (`StoreProgramItemRequest::prepareForValidation`). `x-field` kreeg daarvoor de props `id` en `bag`.
+- **Praktische informatie.** Nieuwe kolom `trips.practical_info` (migratie
+  `2026_09_23_000001_…`, alleen toevoegend). De coördinator vult het in bij de reis, de reiziger ziet
+  het naast het dagprogramma. Weergave: eerst `e()`, dan `nl2br()`, dus nooit ruwe HTML.
+- **Onderweg gevonden:** een reis bewerken waarvan de dagen al bestonden gaf op SQLite een 500
+  (`firstOrCreate` op een datum vond de bestaande dag niet door de date-cast, en de unieke index
+  weigerde de dubbele). Op MySQL viel het niet op; `.env.example` staat wel op SQLite.
+  `TripController::generateDays()` vergelijkt nu in PHP. Test:
+  `test_a_trip_whose_days_already_exist_can_be_edited`.
+
+Nog open uit dezelfde toets (keuze van de opdrachtgever): het dagprogramma toont maar één dag, de
+checklist wordt door de reiziger zelf gevuld (dus 0 % bij een nieuwe reiziger), een coördinator kan
+geen reiziger uitnodigen, er zijn geen eigen 403/404-pagina's, en er is geen voortgangsdashboard.
+
 ## Na de oplevering gevonden: 403 na inloggen als coördinator
 
 Opende je als gast (of met een verlopen reizigerssessie) een reizigerspagina en logde je daarna in
