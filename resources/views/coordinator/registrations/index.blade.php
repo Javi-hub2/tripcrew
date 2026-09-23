@@ -13,7 +13,8 @@
         <div class="space-y-8">
             @foreach ($trips as $trip)
                 <section>
-                    <h2 class="mb-3 text-xs font-bold tracking-[0.12em] text-brand uppercase">{{ $trip->name }}</h2>
+                    {{-- Wit label: de eerste kop valt over de golfrand van de hero en moet daar ook leesbaar zijn. --}}
+                    <h2 class="mb-3 inline-block rounded-full bg-white px-3 py-1 text-xs font-bold tracking-[0.12em] text-brand uppercase shadow-sm ring-1 ring-black/5">{{ $trip->name }}</h2>
                     <ul class="space-y-3">
                         @foreach ($trip->pendingRegistrations as $traveler)
                             @php

@@ -56,14 +56,27 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
   overerving, waardoor een subklasse van `ResetPassword` de tests zou breken. Het
   officiële `toMailUsing()`-extensiepunt levert bovendien minder eigen code op.
 
+### Vormgeving en snelle handelingen
+
+- Stijl "Reisposter": teal-kop met golfrand (`components/hero.blade.php`), kaarten met
+  statusband (`components/activity-card.blade.php`), lettertype Instrument Sans (lokaal via
+  `@fontsource/instrument-sans`). Kleuren staan als tokens in `resources/css/app.css`.
+- Inschrijven, een activiteit kiezen of annuleren, de checklist en goedkeuren/afwijzen werken
+  zonder dat de pagina herlaadt: `resources/js/snel.js` verstuurt formulieren met
+  `data-snel="<id>"` op de achtergrond en ververst alleen het blok met dat id. Zonder
+  JavaScript werkt alles gewoon met herladen. Bewaakt door
+  `tests/Feature/SnelleHandelingenTest.php`.
+- Na wijzigingen in views, CSS of JS: `npm run build` (of `npm run dev` tijdens het werken).
+
 ### Wat er nog open staat
 
 - Mails worden echt verstuurd via Gmail (`MAIL_MAILER=smtp` met een app-wachtwoord in
   `.env`). Met `MAIL_MAILER=log` komen ze in plaats daarvan in `storage/logs/laravel.log`.
-- Nu echte SMTP-bezorging aan staat, duurt het registratieverzoek voor een nieuw adres
-  merkbaar langer dan voor een bestaand adres, omdat alleen dan een mail over het netwerk
-  gaat. Wie dat verschil wil wegnemen, moet de mails in een wachtrij zetten (`ShouldQueue`
-  op de Mailable plus een draaiende `artisan queue:work`).
+- Bewust zo gelaten: met echte SMTP-bezorging duurt registreren (en wachtwoordherstel) voor
+  een adres waar een mail naartoe gaat ±2 seconden, voor een bestaand adres niet. Daaraan is
+  in principe te meten of een adres een account heeft. De wachttijd is geaccepteerd; wie het
+  verschil wil wegnemen, zet de mails in een wachtrij (`ShouldQueue` op de Mailable plus een
+  draaiende `artisan queue:work`).
 
 ## About Laravel
 

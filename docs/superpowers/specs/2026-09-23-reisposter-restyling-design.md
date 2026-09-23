@@ -19,7 +19,8 @@ Kleurtokens in `resources/css/app.css` blijven ongewijzigd (`brand`, `brand-dark
 | Onderdeel | Wijziging |
 |---|---|
 | Lettertype | Instrument Sans wordt echt geladen, lokaal gebundeld via npm (`@fontsource/instrument-sans`), gewichten 400/600/700. |
-| `x-hero` (nieuw) | Teal-kop, verloop `brand` → `brand-darker`, golfrand onderaan in `sand`. Props: `eyebrow` (bovenregel), `title`, `subtitle`; slot voor extra inhoud (tabbladen). |
+| `x-hero` (nieuw) | Teal-kop, verloop `brand` → `brand-darker`, golfrand onderaan in `sand`. Slots: `nav` en de standaardslot. De kopteksten komen uit de secties `title`/`kop`, `eyebrow`, `subtitle` en `hero` van de pagina (zie `layouts/app`). |
+| `x-leeg` (nieuw) | Lege toestand ("nog niets hier") met `role="status"`, tekst plus icoon. |
 | `layouts/app` | Navigatie (logo, naam, uitloggen, coördinator-links) zit in de hero. Inhoud valt deels over de golfrand. Nav-links en uitlogknop krijgen een eigen focusring. |
 | `layouts/auth` (nieuw) | Gecentreerde kaart die over de hero valt, met ondertitel "Samen op reis, alles op één plek". Voor inloggen, registreren, wachtwoord vergeten, herstellen en activeren. |
 | `x-card` | `rounded-2xl`, zachte teal-schaduw. |
@@ -44,12 +45,15 @@ Een formulier met `data-snel="<id>"` wordt onderschept:
 5. Na vervangen worden nieuwe `data-snel`-formulieren in het vervangen blok vanzelf opgepikt
    (event delegation op `document`, geen herbinding nodig).
 
-**Foutafhandeling:** netwerkfout, status ≥ 500, of een antwoord zonder `#<id>` → het formulier
-wordt alsnog gewoon verstuurd (`form.submit()`), zodat een actie nooit verloren gaat. Validatie-
+**Foutafhandeling:** netwerkfout of een foutstatus (419, 403, 500 …) → het formulier wordt alsnog
+gewoon verstuurd (`form.submit()`). Een geslaagd antwoord zonder `#<id>` (de actie is dan al
+verwerkt) → de browser gaat naar die pagina (`location.assign`) in plaats van opnieuw te versturen,
+zodat een actie nooit dubbel gebeurt. Validatie-
 fouten komen via de gewone redirect-met-fouten mee in het ververste blok.
 
-**Toegankelijkheid:** `#meldingen` heeft `aria-live="polite"`; na vervangen gaat de focus naar de
-melding als die er is.
+**Toegankelijkheid:** `#meldingen` heeft `aria-live="polite"`, zodat de melding wordt voorgelezen.
+Wie met het toetsenbord werkte, houdt zijn plek: de focus gaat terug naar dezelfde knop in het
+nieuwe blok, of naar het blok zelf als die knop er niet meer is.
 
 | Handeling | Formulier in | Doelblok |
 |---|---|---|

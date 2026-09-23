@@ -97,6 +97,7 @@ return [
         'destination' => 'bestemming',
         'title' => 'titel',
         'trip_day_id' => 'dag',
+        'label' => 'checklist-item',
         'token' => 'token',
     ],
 ];

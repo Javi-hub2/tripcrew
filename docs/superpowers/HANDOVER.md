@@ -1,6 +1,6 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, nadat de mail echt verstuurd en getest is.
+Laatst bijgewerkt: 2026-09-23, na de reisposter-restyling en de snelle handelingen.
 
 ## Stand: de mail wordt echt verstuurd
 
@@ -12,9 +12,33 @@ activatiemail kwam aan en de activatielink werkte.
 - Terug naar mails in `storage/logs/laravel.log`: zet `MAIL_MAILER=log` en draai
   `php artisan config:clear`.
 - In de lokale database staat een testaccount "Javi Test" van die proef.
-- **Volgende keuze:** punt A hieronder. Met echte bezorging is de responstijd bij registreren
-  (±1,9 s voor een nieuw adres) en wachtwoordherstel weer een signaal of een adres een account
-  heeft. Oplossen vóór de site online gaat.
+- Punt A hieronder (wachttijd van ±2 s bij registreren en wachtwoordherstel) is op 2026-09-23
+  **bewust zo gelaten**: de opdrachtgever vindt de wachttijd geen probleem en wil geen wachtrij.
+
+## Reisposter-restyling en snelle handelingen
+
+Ontwerp: `docs/superpowers/specs/2026-09-23-reisposter-restyling-design.md`. Kleuren ongewijzigd.
+
+- **Uiterlijk.** Elke pagina heeft een teal-kop met golfrand (`x-hero`); de kop komt uit de secties
+  `title`, `kop`, `eyebrow`, `subtitle` en `hero` (uitleg bovenin `layouts/app.blade.php`).
+  Inlogschermen gebruiken `layouts/auth.blade.php`. Nieuwe bouwstenen: `x-activity-card`
+  (statusband *Plek vrij* / *Bijna vol* vanaf 75 % / *Vol* / *Deadline voorbij*) en `x-leeg`
+  (lege toestand). Instrument Sans wordt lokaal gebundeld via `@fontsource/instrument-sans`.
+- **Zonder herladen.** `resources/js/snel.js` verstuurt formulieren met `data-snel="<id>"` op de
+  achtergrond en vervangt alleen het blok `#<id>` plus `#meldingen`. Vijf handelingen: inschrijven
+  (`#reizen`), activiteit kiezen (`#activiteiten`), keuze annuleren (`#keuzes`), checklist afvinken
+  en toevoegen (`#checklist`), goedkeuren/afwijzen (`#aanvragen`). Controllers zijn niet veranderd.
+  Gaat er iets mis (netwerk, 419, 500), dan valt het terug op gewoon versturen.
+  `tests/Feature/SnelleHandelingenTest.php` bewaakt dat elk formulier binnen zijn blok staat en dat
+  het blok ook na de actie (ook in lege toestand) nog bestaat. **Hernoem je een id, pas dan ook
+  `data-snel` aan.**
+- **Getest in een echte browser** (headless Chrome, tegen een tijdelijke SQLite-database): alle vijf
+  handelingen zonder herladen, scrollpositie blijft staan, validatiefout verschijnt in het blok,
+  "Annuleren" in de bevestigingsvraag doet niets, geen horizontale scroll op mobiel, geen
+  JS-fouten.
+- Onderweg gevonden: de validatiemelding van de checklist zei "Het veld **label** is verplicht".
+  Het attribuut heet nu "checklist-item" in `lang/nl/validation.php`.
+- Suite: **90 tests groen**.
 
 ## Waar dit op GitHub staat
 
@@ -98,15 +122,15 @@ De test `test_a_decision_made_between_lookup_and_write_is_not_overwritten` boots
 Op de oude implementatie faalt die test, op de nieuwe niet — anders dan de oudere test
 `..._only_one_wins`, die de twee beslissingen na elkaar doet en ook zonder atomiciteit groen bleef.
 
-## Twee punten die bewust NIET zijn opgelost — jouw keuze
+## Twee punten die bewust NIET zijn opgelost
 
 **A. Zodra echte Gmail-bezorging aan staat, lekt de responstijd weer.**
 Bij registreren en bij wachtwoordherstel doet alleen het pad met een bestaand adres een
 netwerkverbinding naar Gmail. Dat kost honderden milliseconden, waardoor opnieuw meetbaar wordt of
 een adres een account heeft. Met `MAIL_MAILER=log` is er niets aan de hand, maar de mail staat nu op `smtp`.
 Oplossen betekent de mails in een wachtrij zetten (`ShouldQueue` plus een permanent draaiende
-`artisan queue:work`), wat het opzetten van het project zwaarder maakt. Dat is een afweging, geen
-vanzelfsprekendheid.
+`artisan queue:work`), wat het opzetten van het project zwaarder maakt. **Besluit 2026-09-23:
+bewust zo gelaten**; de wachttijd van ±2 s is geaccepteerd. Heroverwegen als de site online gaat.
 
 **B. De inlogroute lekt ongeveer 20 milliseconden** bij een juist wachtwoord op een
 niet-geactiveerd account (`app/Http/Controllers/Auth/LoginController.php:36`; de `isActivated()`-
@@ -124,18 +148,13 @@ zodat juist naadfouten opvallen. Gecontroleerd met een mutatie: een kapotte acti
 
 ## Overige restpunten uit de eindreview (niet blokkerend)
 
-- `x-button` heeft geen compacte of neutrale variant, `x-field` ondersteunt geen `select`. Daardoor
-  staat er nog handgeschreven markup in `traveler/my-choices.blade.php` en
-  `coordinator/activities/_form.blade.php`.
-- Nav-links en de uitlogknop in `layouts/app.blade.php` hebben geen eigen focusring; de
-  browserstandaard werkt wel.
 - `Coordinator\ActivityController::update()` mist een `authorize()`-aanroep die de andere methodes
   wel hebben. Functioneel afgedekt door de rol-middleware.
 - Dode code: `RegistrationStatus::label()`, `ActivityChoicePolicy::view()`, `ActivityPolicy::manage()`,
   `Activity::isFull()`, een ongebruikte `$trip` in `ActivityChoiceController:39`, een ongebruikte
   import in `User.php`, en `tests/Unit/ExampleTest.php`.
-- `resources/css/app.css:10` verwijst naar het lettertype 'Instrument Sans' dat nergens geladen wordt;
-  de app rendert in het systeemlettertype.
+- Opgelost bij de restyling: compacte (`size="sm"`) en neutrale (`variant="ghost"`) knop, `select`
+  in `x-field`, eigen focusring (`.focusring`) op de nav, en het lettertype wordt nu echt geladen.
 
 ## Hoe je dit draait
 

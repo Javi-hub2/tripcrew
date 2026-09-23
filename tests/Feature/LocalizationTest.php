@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RegistrationStatus;
+use App\Models\Trip;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Session;
 use Tests\TestCase;
@@ -36,5 +39,20 @@ class LocalizationTest extends TestCase
         $message = Session::get('errors')->first('email');
 
         $this->assertStringContainsString('e-mailadres', $message, "Melding was: {$message}");
+    }
+
+    public function test_the_checklist_label_has_a_dutch_name(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = User::factory()->create();
+        $trip->registrations()->attach($traveler, ['status' => RegistrationStatus::Approved->value]);
+
+        $this->actingAs($traveler)
+            ->post(route('traveler.checklist.store', $trip), ['label' => ''])
+            ->assertSessionHasErrors('label');
+
+        $message = Session::get('errors')->first('label');
+
+        $this->assertStringContainsString('checklist-item', $message, "Melding was: {$message}");
     }
 }
