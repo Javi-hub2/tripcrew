@@ -1,10 +1,14 @@
 @extends('layouts.app')
 @section('title', 'Reis bewerken')
 
+@section('kop', 'Reis bewerken')
+@section('eyebrow', $trip->name)
+@section('hero')
+    @include('coordinator._nav')
+@endsection
+
 @section('content')
-<h1 class="mb-4 text-2xl font-semibold text-brand">{{ $trip->name }} bewerken</h1>
-@include('coordinator._nav')
-<form method="POST" action="{{ route('coordinator.trips.update', $trip) }}" class="max-w-xl">
+<form method="POST" action="{{ route('coordinator.trips.update', $trip) }}" class="max-w-2xl">
     <x-card>
         <div class="space-y-4">
             @method('PUT')
