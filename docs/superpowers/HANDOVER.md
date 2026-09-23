@@ -127,6 +127,15 @@ niet-geactiveerd account (`app/Http/Controllers/Auth/LoginController.php:36`; de
 controle valt buiten Laravels Timebox). Praktisch nauwelijks bruikbaar, want zo'n account heeft een
 willekeurig wachtwoord van veertig tekens.
 
+## Ketentest — gedaan
+
+`tests/Feature/FullJourneyTest.php` loopt de hele keten in één test door: registreren → activeren →
+inschrijven → coördinator keurt goed → reiziger ziet het dagprogramma → wachtwoord vergeten →
+herstellen → inloggen met het nieuwe wachtwoord. Links komen uit de gerenderde mail, formulier-
+adressen uit de gerenderde pagina, en inloggen gaat via het echte formulier (geen `actingAs()`),
+zodat juist naadfouten opvallen. Gecontroleerd met een mutatie: een kapotte activatielink in
+`ActivationMail` laat de test falen. Suite nu **68 tests groen**.
+
 ## Overige restpunten uit de eindreview (niet blokkerend)
 
 - `x-button` heeft geen compacte of neutrale variant, `x-field` ondersteunt geen `select`. Daardoor
@@ -141,9 +150,6 @@ willekeurig wachtwoord van veertig tekens.
   import in `User.php`, en `tests/Unit/ExampleTest.php`.
 - `resources/css/app.css:10` verwijst naar het lettertype 'Instrument Sans' dat nergens geladen wordt;
   de app rendert in het systeemlettertype.
-- Er is geen test die de hele keten in één keer doorloopt (registreren → activeren → inloggen →
-  inschrijven → goedkeuren → dagprogramma → wachtwoord vergeten). Juist de drie ernstigste
-  bevindingen van de eindreview waren naadfouten die zo'n test zou hebben gevonden.
 
 ## Hoe je dit draait
 
