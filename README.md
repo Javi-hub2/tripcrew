@@ -13,6 +13,17 @@ TripCrew is een schoolreis-applicatie waarmee reizigers zich registreren, zich i
 voor een reis en hun dagprogramma bekijken, en waarmee coördinatoren reizen beheren en
 inschrijvingen goedkeuren of afwijzen.
 
+### Inloggen (demo)
+
+Na `php artisan db:seed` bestaan deze testaccounts:
+
+| Rol | E-mail | Wachtwoord |
+|---|---|---|
+| Coördinator | `coordinator@tripcrew.test` | `password` |
+| Reiziger | `reiziger@tripcrew.test` | `password` |
+
+Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/DatabaseSeeder.php`.
+
 ### Herleidbaarheid eisen → code
 
 | Eis | Waar |
@@ -47,9 +58,9 @@ inschrijvingen goedkeuren of afwijzen.
 
 ### Wat er nog open staat
 
-- Het Gmail app-wachtwoord moet nog in `.env` worden gezet en `MAIL_MAILER` op `smtp`.
-  Zolang dat niet gebeurd is, komen mails in `storage/logs/laravel.log`.
-- Zodra echte SMTP-bezorging aan staat, duurt het registratieverzoek voor een nieuw adres
+- Mails worden echt verstuurd via Gmail (`MAIL_MAILER=smtp` met een app-wachtwoord in
+  `.env`). Met `MAIL_MAILER=log` komen ze in plaats daarvan in `storage/logs/laravel.log`.
+- Nu echte SMTP-bezorging aan staat, duurt het registratieverzoek voor een nieuw adres
   merkbaar langer dan voor een bestaand adres, omdat alleen dan een mail over het netwerk
   gaat. Wie dat verschil wil wegnemen, moet de mails in een wachtrij zetten (`ShouldQueue`
   op de Mailable plus een draaiende `artisan queue:work`).
