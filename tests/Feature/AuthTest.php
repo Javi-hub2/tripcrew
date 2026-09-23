@@ -3,7 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -63,5 +67,25 @@ class AuthTest extends TestCase
             ->assertSessionHas('error', 'Onjuiste gegevens.');
 
         $this->assertGuest();
+    }
+
+    /**
+     * Eindreview punt B: bij het juiste wachtwoord op een niet-geactiveerd account
+     * slaagde Auth::attempt() eerst. Een geslaagde poging keert meteen terug uit
+     * Laravels Timebox, een mislukte wordt opgerekt tot de ondergrens, dus de
+     * responstijd verried dat het wachtwoord klopte. Nu moet zo'n poging exact het
+     * mislukte pad volgen: geen Login en Logout, wel Failed.
+     */
+    public function test_not_activated_user_with_correct_password_takes_the_failed_path(): void
+    {
+        Event::fake([Login::class, Logout::class, Failed::class]);
+        $user = User::factory()->notActivated()->create(['password' => Hash::make('password')]);
+
+        $this->post('/inloggen', ['email' => $user->email, 'password' => 'password'])
+            ->assertSessionHas('error', 'Onjuiste gegevens.');
+
+        Event::assertNotDispatched(Login::class);
+        Event::assertNotDispatched(Logout::class);
+        Event::assertDispatched(Failed::class);
     }
 }

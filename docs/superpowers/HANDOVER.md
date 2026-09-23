@@ -121,7 +121,7 @@ De test `test_a_decision_made_between_lookup_and_write_is_not_overwritten` boots
 Op de oude implementatie faalt die test, op de nieuwe niet — anders dan de oudere test
 `..._only_one_wins`, die de twee beslissingen na elkaar doet en ook zonder atomiciteit groen bleef.
 
-## Twee punten die bewust NIET zijn opgelost
+## Timing: punt A bewust zo gelaten, punt B opgelost
 
 **A. Zodra echte Gmail-bezorging aan staat, lekt de responstijd weer.**
 Bij registreren en bij wachtwoordherstel doet alleen het pad met een bestaand adres een
@@ -131,10 +131,12 @@ Oplossen betekent de mails in een wachtrij zetten (`ShouldQueue` plus een perman
 `artisan queue:work`), wat het opzetten van het project zwaarder maakt. **Besluit 2026-09-23:
 bewust zo gelaten**; de wachttijd van ±2 s is geaccepteerd. Heroverwegen als de site online gaat.
 
-**B. De inlogroute lekt ongeveer 20 milliseconden** bij een juist wachtwoord op een
-niet-geactiveerd account (`app/Http/Controllers/Auth/LoginController.php:36`; de `isActivated()`-
-controle valt buiten Laravels Timebox). Praktisch nauwelijks bruikbaar, want zo'n account heeft een
-willekeurig wachtwoord van veertig tekens.
+**B. Opgelost (2026-09-23): de inlogroute lekte bij een juist wachtwoord op een niet-geactiveerd
+account.** `LoginController` gebruikt nu `Auth::attemptWhen()` met `isActivated()` als voorwaarde,
+zodat zo'n poging exact het mislukte pad volgt (binnen Laravels Timebox, zonder in- en uitloggen).
+Voorheen keerde die poging als "geslaagd" meteen terug uit de Timebox en werd daarna uitgelogd.
+Test: `test_not_activated_user_with_correct_password_takes_the_failed_path` (geen Login/Logout-,
+wel een Failed-event).
 
 ## Ketentest — gedaan
 
