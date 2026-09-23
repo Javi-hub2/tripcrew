@@ -147,9 +147,9 @@ zodat juist naadfouten opvallen. Gecontroleerd met een mutatie: een kapotte acti
 
 ## Overige restpunten uit de eindreview (niet blokkerend)
 
-- Opgelost (2026-09-23): `Coordinator\ActivityController::update()` roept nu ook
-  `authorize('update', $activity)` aan. Test: `test_updating_an_activity_goes_through_the_activity_policy`
-  vervangt de policy door een die alles weigert, want met een reiziger was het verschil niet te
+- Opgelost (2026-09-23): `Coordinator\ActivityController::update()` en `store()` roepen nu ook de
+  `ActivityPolicy` aan (`update` en `create`). De tests `test_updating_…` en
+  `test_creating_an_activity_goes_through_the_activity_policy` vervangen de policy door een die alles weigert, want met een reiziger was het verschil niet te
   zien (rol-middleware en `StoreActivityRequest` weigeren die al).
 - Dode code opgeruimd (2026-09-23): `RegistrationStatus::label()`, `ActivityChoicePolicy::view()`,
   `ActivityPolicy::manage()`, `Activity::isFull()`, de ongebruikte `$trip` in

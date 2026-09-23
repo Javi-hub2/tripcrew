@@ -36,6 +36,8 @@ class ActivityController extends Controller
 
     public function store(StoreActivityRequest $request, Trip $trip): RedirectResponse
     {
+        $this->authorize('create', Activity::class);
+
         Activity::create($request->validated());
 
         return redirect()->route('coordinator.trips.activities.index', $trip)

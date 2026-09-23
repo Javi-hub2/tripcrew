@@ -232,6 +232,26 @@ class CoordinatorTest extends TestCase
 
         $this->assertSame('Kajakken', $activity->fresh()->name);
     }
+
+    /** Zelfde gat als bij update(): store() riep de ActivityPolicy niet aan. */
+    public function test_creating_an_activity_goes_through_the_activity_policy(): void
+    {
+        Gate::policy(Activity::class, DenyEverythingPolicy::class);
+
+        $trip = Trip::factory()->create();
+        $day = $trip->days()->create(['date' => '2030-06-01']);
+
+        $this->actingAs(User::factory()->coordinator()->create())
+            ->post(route('coordinator.trips.activities.store', $trip), [
+                'trip_day_id' => $day->id,
+                'name' => 'Kajakken',
+                'capacity' => 5,
+                'deadline' => '2030-05-30 18:00',
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, Activity::count());
+    }
 }
 
 class DenyEverythingPolicy
