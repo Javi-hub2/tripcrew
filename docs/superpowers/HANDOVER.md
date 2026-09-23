@@ -131,9 +131,31 @@ Inloggen: `coordinator@tripcrew.test` en `reiziger@tripcrew.test`, wachtwoord `p
 
 **Draai geen `migrate:fresh`, `migrate:rollback` of `db:wipe` zonder te vragen.**
 
+## Online zetten via Cloudflare
+
+De site draait nu alleen op XAMPP en gaat later via Cloudflare het internet op. Wat er dan moet
+gebeuren:
+
+1. In `.env`: `APP_ENV=production`, `APP_DEBUG=false`, en `APP_URL=https://<jouw domein>`.
+2. `php artisan config:cache` (en `route:cache`, `view:cache`) na elke `.env`-wijziging.
+3. De afzender verhuizen naar het eigen domein: een transactionele maildienst (Brevo, Resend) met
+   DNS-verificatie via Cloudflare in plaats van een persoonlijk Gmail-adres. Gmail blijft werken,
+   maar mail van een privéadres aan onbekenden belandt vaker in spam.
+4. Lees punt A hierboven opnieuw: met echte bezorging is het responstijdlek bij registreren en
+   wachtwoordherstel weer meetbaar. Dat is het moment om de mails in een wachtrij te zetten.
+
+**Al geregeld, niet weghalen:** `bootstrap/app.php` vertrouwt de `X-Forwarded-*`-headers
+(`trustProxies(at: '*')`). Cloudflare beëindigt https en stuurt het request intern als http door;
+zonder dat vertrouwen bouwt `route()` in `ActivationMail` een link met `http://` en de interne host,
+en mailen we bezoekers een kapotte activatielink. `tests/Feature/ActivationLinkTest.php` dekt beide
+kanten af: met proxyheaders wordt de link `https://<domein>/...`, zonder blijft hij gewoon http.
+Staat de app achter iets anders dan Cloudflare, beperk `at:` dan tot de IP-reeksen van die proxy.
+
 ## Openstaand voor de opdrachtgever
 
-**Gmail app-wachtwoord.** Zet het in `.env` bij `MAIL_PASSWORD` en zet `MAIL_MAILER=smtp`. Aanmaken
+**Gmail app-wachtwoord.** Zet het in `.env` bij `MAIL_PASSWORD`, zet `MAIL_USERNAME` en
+`MAIL_FROM_ADDRESS` op hetzelfde Gmail-adres, en zet dan `MAIL_MAILER=smtp` (daarna
+`php artisan config:clear`). Aanmaken
 via Google-account → Beveiliging → App-wachtwoorden (tweestapsverificatie moet aan staan). Gebruik
 een persoonlijk Gmail-account, niet het Yuverta-schoolaccount: dat is Microsoft 365 en blokkeert
 SMTP. Tot dan komen de mails in `storage/logs/laravel.log`. Lees daarbij punt A hierboven.
