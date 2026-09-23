@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreChecklistItemRequest;
 use App\Models\ChecklistItem;
 use App\Models\Trip;
+use App\Models\TripChecklistItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,6 +29,20 @@ class ChecklistItemController extends Controller
         $this->authorize('update', $checklistItem);
 
         $checklistItem->update(['checked' => ! $checklistItem->checked]);
+
+        return back()->with('success', 'Checklist bijgewerkt.');
+    }
+
+    /**
+     * Vast checklistpunt van de coördinator aan- of uitvinken, alleen voor de ingelogde
+     * reiziger zelf. Alleen wie voor de reis is goedgekeurd mag dat (TripPolicy::view).
+     */
+    public function toggleRequired(Trip $trip, TripChecklistItem $tripChecklistItem): RedirectResponse
+    {
+        abort_unless($tripChecklistItem->trip_id === $trip->id, 404);
+        $this->authorize('view', $trip);
+
+        $tripChecklistItem->completedBy()->toggle(Auth::id());
 
         return back()->with('success', 'Checklist bijgewerkt.');
     }

@@ -1,6 +1,72 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, na de reisposter-restyling en de snelle handelingen.
+Laatst bijgewerkt: 2026-09-23, einde dag. Begin bij het stappenplan hieronder.
+
+## ▶ Morgen verder: stappenplan
+
+**Stand op 2026-09-23, einde dag.** Je werkt op branch **`feature/toets-restpunten`** (nog niet
+gemerged of gepusht). Daarop staan:
+
+- ✅ `326ecc0` Eigen Nederlandse foutpagina's (403, 404, 419, 429, 500, 503) in huisstijl.
+- ✅ `c4f2a07` Dagprogramma per dag: de reiziger kiest een dag (`/reizen/{trip}/{dag}`), zelfde
+  dagkiezer als bij activiteiten (`traveler/_days.blade.php`).
+- 🟡 Tussencommit "wip: vaste checklistpunten": **half af, 4 tests falen met opzet.** Dit is
+  het laatste open punt uit de toets aan de briefing.
+
+Eerst: `cd /mnt/c/xampp/htdocs/tripcrew` en `git checkout feature/toets-restpunten`.
+Tests draaien met `C:\xampp\php\php.exe artisan test` (verwacht nu: 4 falen, de rest groen).
+
+### Vaste checklistpunten afmaken
+
+Doel: de coördinator legt per reis vaste punten vast ("Paspoort gecontroleerd"), elke reiziger
+vinkt ze zelf af, en het deelnemersoverzicht toont de voltooiing daarvan.
+
+Al gedaan: migratie `2026_09_23_000002_create_trip_checklist_items_table.php` (twee nieuwe
+tabellen, alleen toevoegend), model `TripChecklistItem` (`completedBy()`, `isDoneBy()`),
+`Trip::requiredChecklistItems()`, routes, tabblad *Checklist* in `coordinator/_nav`,
+`Coordinator/TripChecklistItemController`, `ChecklistItemController::toggleRequired()`, en de
+tests in `tests/Feature/RequiredChecklistTest.php`.
+
+Nog te doen, in deze volgorde:
+
+1. **Eigen FormRequest voor de coördinator.** `TripChecklistItemController::store()` gebruikt nu
+   `StoreChecklistItemRequest`, maar die laat alleen reizigers toe (`isTraveler()`). Maak
+   `StoreTripChecklistItemRequest` (authorize: `isCoordinator()`, regel: `label` verplicht,
+   max 255) en gebruik die. Daarmee gaan "add and see" en "label is required" groen.
+2. **Beheerpagina** `resources/views/coordinator/checklist/index.blade.php`: lijst van de punten
+   met per punt "X van Y reizigers afgevinkt" (`completed_by_count` en `$travelerCount` komen al
+   uit de controller) en een knop Verwijderen; formulier "Punt toevoegen"; lege toestand met
+   precies de tekst "Nog geen vaste checklistpunten voor deze reis." Zet de lijst en de
+   formulieren in een blok `id="vaste-checklist"` met `data-snel="vaste-checklist"`.
+3. **Reiziger** (`traveler/my-choices.blade.php` en `ActivityChoiceController::myChoices()`):
+   bovenaan de checklistkaart een kopje "Van de coördinator" met de vaste punten als
+   afvinkknoppen (route `traveler.required-checklist.toggle`, `data-snel="checklist"`), eigen
+   punten eronder. Geef de vaste punten en de id's die deze reiziger heeft afgevinkt mee vanuit de
+   controller. De teller "X van Y afgevinkt" telt vaste en eigen punten samen.
+4. **Deelnemersoverzicht** (`Coordinator/ParticipantController`): heeft de reis vaste punten, dan
+   is het percentage = afgevinkte vaste punten / aantal vaste punten; anders zoals nu over de
+   eigen punten. Daarmee gaat "completion status counts the required items" groen.
+5. **Snelle handelingen:** in `SnelleHandelingenTest` een test voor `#vaste-checklist` (toevoegen,
+   verwijderen) en voor het afvinken van een vast punt binnen `#checklist`.
+6. **Seeder:** geef de demoreis twee of drie vaste punten, zodat je het direct ziet.
+7. **Database:** `C:\xampp\php\php.exe artisan migrate` (alleen toevoegend; **geen**
+   `migrate:fresh`).
+8. **Controleren:** volledige testsuite groen, en in de browser: punt toevoegen en verwijderen als
+   coördinator, afvinken als reiziger, percentage in Deelnemers, mobiel.
+9. **Documentatie:** regel in de README-tabel "Herleidbaarheid eisen → code", en dit stappenplan
+   vervangen door een korte beschrijving van wat er gebouwd is.
+10. **Afronden:** de wip-commit mag blijven staan of samengevoegd worden; daarna mergen naar `main`
+    en pushen (alleen als je dat zelf wilt).
+
+### Daarna nog open (keuze, niet verplicht)
+
+- **Reiziger uitnodigen door de coördinator.** Nu registreert een reiziger zich zelf en keurt de
+  coördinator goed. De briefing zegt "account activeren voor een geboekte reis"; overleg met je
+  docent of zelfregistratie volstaat of dat de coördinator ook iemand moet kunnen uitnodigen.
+- **Voortgangsdashboard voor coördinatoren.** De bijlage noemt dit als *mogelijke* indeling:
+  per reis in één oogopslag hoeveel checklists af zijn en hoe vol de activiteiten zitten.
+- **Kleuren verantwoorden.** De briefing geeft navy/cyaan/oranje als richting; de app gebruikt
+  teal/zand/oranje (mag volgens de briefing). Noem de reden in je verantwoording.
 
 ## Stand: de mail wordt echt verstuurd
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\Coordinator\ActivityController;
 use App\Http\Controllers\Coordinator\ParticipantController;
 use App\Http\Controllers\Coordinator\ProgramItemController;
 use App\Http\Controllers\Coordinator\RegistrationController;
+use App\Http\Controllers\Coordinator\TripChecklistItemController;
 use App\Http\Controllers\Coordinator\TripController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TravelerProgramController;
@@ -48,6 +49,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/activiteiten/{tripDay?}', [TravelerProgramController::class, 'activities'])->name('activities');
             Route::get('/mijn-keuzes', [ActivityChoiceController::class, 'myChoices'])->name('my-choices');
             Route::post('/checklist', [ChecklistItemController::class, 'store'])->name('checklist.store');
+            Route::patch('/vaste-checklist/{tripChecklistItem}', [ChecklistItemController::class, 'toggleRequired'])->name('required-checklist.toggle');
         });
 
         Route::post('/activiteiten/{activity}/kiezen', [ActivityChoiceController::class, 'store'])->name('activities.choose');
@@ -72,6 +74,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('activiteiten/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
 
             Route::get('deelnemers', [ParticipantController::class, 'index'])->name('participants.index');
+
+            // Vaste checklistpunten per reis (voltooiingsstatus in het deelnemersoverzicht).
+            Route::get('checklist', [TripChecklistItemController::class, 'index'])->name('checklist.index');
+            Route::post('checklist', [TripChecklistItemController::class, 'store'])->name('checklist.store');
+            Route::delete('checklist/{tripChecklistItem}', [TripChecklistItemController::class, 'destroy'])->name('checklist.destroy');
 
             // Programmaonderdelen per dag (briefing: "reizen, dagen en programmaonderdelen beheren").
             Route::get('programma', [ProgramItemController::class, 'index'])->name('program.index');
