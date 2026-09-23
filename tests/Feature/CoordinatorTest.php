@@ -213,6 +213,28 @@ class CoordinatorTest extends TestCase
      * dus met een reiziger valt dat niet te zien. Daarom een policy die alles weigert:
      * dan moet ook update() weigeren.
      */
+    /**
+     * Gevonden bij de browsercontrole: een reis bewerken waarvan de dagen al bestonden gaf
+     * op SQLite een 500. firstOrCreate zocht op '2030-06-01', maar de date-cast slaat
+     * '2030-06-01 00:00:00' op, dus de bestaande dag werd niet gevonden en de unieke index
+     * weigerde de "nieuwe". Op MySQL (DATE-kolom) viel het niet op.
+     */
+    public function test_a_trip_whose_days_already_exist_can_be_edited(): void
+    {
+        $coordinator = User::factory()->coordinator()->create();
+        $this->actingAs($coordinator)->post(route('coordinator.trips.store'), [
+            'name' => 'Praag 2030', 'start_date' => '2030-06-01', 'end_date' => '2030-06-03',
+        ]);
+        $trip = Trip::where('name', 'Praag 2030')->firstOrFail();
+        $this->assertSame(3, $trip->days()->count());
+
+        $this->put(route('coordinator.trips.update', $trip), [
+            'name' => 'Praag 2030 (herzien)', 'start_date' => '2030-06-01', 'end_date' => '2030-06-04',
+        ])->assertSessionHas('success');
+
+        $this->assertSame(4, $trip->days()->count(), 'Er moet precies één dag bijkomen, geen dubbele.');
+    }
+
     public function test_updating_an_activity_goes_through_the_activity_policy(): void
     {
         Gate::policy(Activity::class, DenyEverythingPolicy::class);

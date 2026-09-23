@@ -83,13 +83,15 @@ class TripController extends Controller
 
     private function generateDays(Trip $trip, string $start, string $end): void
     {
-        $period = Carbon::parse($start)->toPeriod(Carbon::parse($end));
+        // Bestaande dagen in PHP vergelijken, niet via firstOrCreate(['date' => 'Y-m-d']):
+        // de date-cast slaat op SQLite 'Y-m-d 00:00:00' op, waardoor die query een bestaande
+        // dag niet vond en de unieke index (trip_id, date) de dubbele dag weigerde (500).
+        $existing = $trip->days()->get()->map(fn (TripDay $day) => $day->date->toDateString());
 
-        foreach ($period as $date) {
-            TripDay::firstOrCreate([
-                'trip_id' => $trip->id,
-                'date' => $date->toDateString(),
-            ]);
+        foreach (Carbon::parse($start)->toPeriod(Carbon::parse($end)) as $date) {
+            if (! $existing->contains($date->toDateString())) {
+                $trip->days()->create(['date' => $date->toDateString()]);
+            }
         }
     }
 }

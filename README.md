@@ -31,6 +31,8 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
 | Zelfregistratie | `Auth/RegisterController`, `RegisterRequest`, `Mail/ActivationMail`, `auth/register.blade.php` |
 | Inschrijven voor een reis | `TripRegistrationController`, `traveler/register-trip.blade.php` |
 | Goedkeuring door coördinator | `Coordinator/RegistrationController`, `coordinator/registrations/index.blade.php` |
+| Programmaonderdelen beheren | `Coordinator/ProgramItemController`, `StoreProgramItemRequest`, `UpdateProgramItemRequest`, `coordinator/program/*.blade.php` |
+| Praktische informatie | kolom `trips.practical_info`, `StoreTripRequest`, `coordinator/trips/_form.blade.php`, `traveler/dashboard.blade.php` |
 | Wachtwoordherstel | `Auth/PasswordResetController`, `ResetPasswordRequest`, `auth/forgot-password.blade.php`, `auth/reset-password.blade.php`, `AppServiceProvider` (`ResetPassword::toMailUsing()`) |
 
 ### Ontwerpkeuzes die niet letterlijk in de briefing stonden
