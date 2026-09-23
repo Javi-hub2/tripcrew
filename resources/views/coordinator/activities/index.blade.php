@@ -29,7 +29,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @foreach ($activities as $activity)
-                        @php $pct = min(100, round($activity->choices_count / $activity->capacity * 100)); @endphp
+                        @php $pct = $activity->capacity ? min(100, round($activity->choices_count / $activity->capacity * 100)) : 100; @endphp
                         <tr>
                             <td class="px-4 py-3 font-medium">{{ $activity->name }}</td>
                             <td class="px-4 py-3">{{ $activity->tripDay->date->format('d-m-Y') }}</td>

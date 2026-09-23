@@ -19,6 +19,10 @@
                             <div>
                                 <p class="font-medium">{{ $traveler->name }}</p>
                                 <p class="text-sm text-slate-600">{{ $traveler->email }}</p>
+                                {{-- Ontwerp: naam, e-mailadres, reis en datum van de aanvraag. --}}
+                                @if ($traveler->pivot->requested_at)
+                                    <p class="text-sm text-slate-500">Aangevraagd op {{ \Illuminate\Support\Carbon::parse($traveler->pivot->requested_at)->format('d-m-Y') }}</p>
+                                @endif
                             </div>
                             <div class="flex gap-2">
                                 <form method="POST" action="{{ route('coordinator.registrations.approve', [$trip, $traveler]) }}">
