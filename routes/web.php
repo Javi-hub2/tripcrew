@@ -43,7 +43,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/reizen/{trip}/inschrijven', [TripRegistrationController::class, 'store'])->name('traveler.registrations.store');
 
         Route::prefix('reizen/{trip}')->name('traveler.')->group(function () {
-            Route::get('/', [TravelerProgramController::class, 'dashboard'])->name('dashboard');
+            // Alleen cijfers voor de dag, zodat /activiteiten en /mijn-keuzes hier niet op vallen.
+            Route::get('/{tripDay?}', [TravelerProgramController::class, 'dashboard'])->whereNumber('tripDay')->name('dashboard');
             Route::get('/activiteiten/{tripDay?}', [TravelerProgramController::class, 'activities'])->name('activities');
             Route::get('/mijn-keuzes', [ActivityChoiceController::class, 'myChoices'])->name('my-choices');
             Route::post('/checklist', [ChecklistItemController::class, 'store'])->name('checklist.store');

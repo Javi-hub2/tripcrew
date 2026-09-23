@@ -10,14 +10,14 @@ use Illuminate\Support\Facades\Auth;
 // FE-03: dagprogramma bekijken.
 class TravelerProgramController extends Controller
 {
-    public function dashboard(Trip $trip): View|RedirectResponse
+    public function dashboard(Trip $trip, $tripDay = null): View|RedirectResponse
     {
         $this->authorize('view', $trip);
 
-        // Standaard: laat vandaag zien, of anders de eerste dag van de reis.
-        $day = $trip->days()
-            ->whereDate('date', now()->toDateString())
-            ->first() ?? $trip->days()->first();
+        // Gekozen dag, of standaard vandaag, of anders de eerste dag van de reis.
+        $day = $tripDay
+            ? $trip->days()->findOrFail($tripDay)
+            : ($trip->days()->whereDate('date', now()->toDateString())->first() ?? $trip->days()->first());
 
         return view('traveler.dashboard', [
             'trip' => $trip,

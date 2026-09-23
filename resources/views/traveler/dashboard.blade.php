@@ -6,6 +6,8 @@
 @endsection
 
 @section('content')
+@include('traveler._days', ['dayRoute' => 'traveler.dashboard'])
+
 <div class="grid gap-6 lg:grid-cols-3">
     {{-- FE-03: dagprogramma --}}
     <x-card class="lg:col-span-2" :title="'Programma ' . ($day ? $day->date->translatedFormat('l j F') : '')">
