@@ -5,14 +5,10 @@ namespace App\Policies;
 use App\Models\ActivityChoice;
 use App\Models\User;
 
-// TE-03 voorbeeld uit de briefing: /mijn-keuzes/14 van iemand anders openen -> 403.
+// TE-03 voorbeeld uit de briefing: /mijn-keuzes/14 van iemand anders aanspreken -> 403.
+// De enige route op een losse keuze is DELETE /mijn-keuzes/{choice}; die gaat via delete().
 class ActivityChoicePolicy
 {
-    public function view(User $user, ActivityChoice $choice): bool
-    {
-        return $choice->user_id === $user->id;
-    }
-
     public function delete(User $user, ActivityChoice $choice): bool
     {
         if ($choice->user_id !== $user->id) {

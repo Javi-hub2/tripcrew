@@ -38,7 +38,7 @@ Ontwerp: `docs/superpowers/specs/2026-09-23-reisposter-restyling-design.md`. Kle
   JS-fouten.
 - Onderweg gevonden: de validatiemelding van de checklist zei "Het veld **label** is verplicht".
   Het attribuut heet nu "checklist-item" in `lang/nl/validation.php`.
-- Suite: **90 tests groen**.
+- Suite: **90 tests groen** (na het opruimen van de voorbeeldtest: 89).
 
 ## Waar dit op GitHub staat
 
@@ -149,9 +149,12 @@ zodat juist naadfouten opvallen. Gecontroleerd met een mutatie: een kapotte acti
 
 - `Coordinator\ActivityController::update()` mist een `authorize()`-aanroep die de andere methodes
   wel hebben. Functioneel afgedekt door de rol-middleware.
-- Dode code: `RegistrationStatus::label()`, `ActivityChoicePolicy::view()`, `ActivityPolicy::manage()`,
-  `Activity::isFull()`, een ongebruikte `$trip` in `ActivityChoiceController:39`, een ongebruikte
-  import in `User.php`, en `tests/Unit/ExampleTest.php`.
+- Dode code opgeruimd (2026-09-23): `RegistrationStatus::label()`, `ActivityChoicePolicy::view()`,
+  `ActivityPolicy::manage()`, `Activity::isFull()`, de ongebruikte `$trip` in
+  `ActivityChoiceController::store()`, de ongebruikte `MustVerifyEmail`-import in `User.php`, en
+  `tests/Unit/ExampleTest.php`. Daarmee was `tests/Unit/` leeg; de Unit-suite is uit
+  `phpunit.xml` gehaald, anders stopt PHPUnit met "Test directory not found". Maak je later weer
+  unit-tests, zet de suite dan terug.
 - Opgelost bij de restyling: compacte (`size="sm"`) en neutrale (`variant="ghost"`) knop, `select`
   in `x-field`, eigen focusring (`.focusring`) op de nav, en het lettertype wordt nu echt geladen.
 

@@ -36,8 +36,6 @@ class ActivityChoiceController extends Controller
     {
         $this->authorize('choose', $activity);
 
-        $trip = $activity->tripDay->trip;
-
         if ($activity->deadlineHasPassed()) {
             return back()->with('error', 'De deadline voor deze activiteit is voorbij.');
         }
