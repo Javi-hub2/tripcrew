@@ -42,10 +42,9 @@ Ontwerp: `docs/superpowers/specs/2026-09-23-reisposter-restyling-design.md`. Kle
 
 ## Waar dit op GitHub staat
 
-`https://github.com/Javi-hub2/tripcrew` (openbaar). `main` is de MVP plus het ontwerp;
-`feature/registratie-mail-reset` heeft alle 28 commits van dit werk en staat open als **PR #1**,
-mergebaar zonder conflicten. Na het mergen lokaal `git checkout main && git pull`, anders lopen de
-werkmap en GitHub uit de pas.
+`https://github.com/Javi-hub2/tripcrew` (openbaar). Al het werk staat op **`main`**: PR #1
+(`feature/registratie-mail-reset`) is op 2026-09-23 gemerged met merge-commit `6329811`, daarna is
+de branch lokaal en op GitHub verwijderd. Nieuw werk begint op een nieuwe branch vanaf `main`.
 
 ## Wat wordt hier gebouwd
 
@@ -64,7 +63,7 @@ brede review over de hele branch.
 
 ## Waar staat het nu
 
-Branch: `feature/registratie-mail-reset`. Alle acht taken zijn af en gereviewd, en alle negen
+Gebouwd op de branch `feature/registratie-mail-reset`, inmiddels gemerged naar `main`. Alle acht taken zijn af en gereviewd, en alle negen
 punten uit de eindreview zijn opgelost. De suite is groen (65 tests) en de assets zijn gebouwd.
 Wat nu nog openstaat is een keuze, geen gebrek: punt A en B hieronder, en de restpunten.
 
