@@ -88,4 +88,39 @@ class AuthTest extends TestCase
         Event::assertNotDispatched(Logout::class);
         Event::assertDispatched(Failed::class);
     }
+
+    /**
+     * Wie als gast (of met een verlopen sessie) een reizigerspagina opent en daarna als
+     * coördinator inlogt, werd door redirect()->intended() naar die reizigerspagina
+     * gestuurd en kreeg een 403. De onthouden pagina geldt alleen als de rol hem mag zien.
+     */
+    public function test_coordinator_is_not_sent_to_a_remembered_traveler_page(): void
+    {
+        $coordinator = User::factory()->coordinator()->create(['password' => Hash::make('password')]);
+
+        $this->get(route('traveler.registrations.index'))->assertRedirect(route('login'));
+
+        $this->post('/inloggen', ['email' => $coordinator->email, 'password' => 'password'])
+            ->assertRedirect(route('dashboard'));
+    }
+
+    public function test_traveler_is_still_sent_to_the_remembered_page(): void
+    {
+        $traveler = User::factory()->create(['password' => Hash::make('password')]);
+
+        $this->get(route('traveler.registrations.index'))->assertRedirect(route('login'));
+
+        $this->post('/inloggen', ['email' => $traveler->email, 'password' => 'password'])
+            ->assertRedirect(route('traveler.registrations.index'));
+    }
+
+    public function test_coordinator_is_still_sent_to_a_remembered_coordinator_page(): void
+    {
+        $coordinator = User::factory()->coordinator()->create(['password' => Hash::make('password')]);
+
+        $this->get(route('coordinator.registrations.index'))->assertRedirect(route('login'));
+
+        $this->post('/inloggen', ['email' => $coordinator->email, 'password' => 'password'])
+            ->assertRedirect(route('coordinator.registrations.index'));
+    }
 }
