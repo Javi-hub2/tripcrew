@@ -33,7 +33,7 @@ zie hieronder). De suite is groen en de assets zijn gebouwd.
 | 6 Zelfregistratie + activatiemail | klaar | `8529329..0fcf303` |
 | 7 Wachtwoord vergeten | klaar | `0fcf303..fb16db9` |
 | 8 Mailconfiguratie, README, opruimen | klaar | `9aa90c2..2fad504` |
-| Fixronde na eindreview | punt 1-3 en 7-9 klaar, **4-6 niet, zie hieronder** | `93c99f3`, `e1fb99a`, `0868c35` |
+| Fixronde na eindreview | punt 1-3 en 7-9 klaar, **4-6 niet, zie hieronder** | `93c99f3`, `e1fb99a` + docs-commit erna |
 
 ## Stand van de fixronde
 
