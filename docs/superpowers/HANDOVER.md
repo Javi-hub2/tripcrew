@@ -123,6 +123,13 @@ C:\xampp\php\php.exe artisan serve
 npm run build                            # na wijzigingen in views of CSS
 ```
 
+`npm run build` hoeft meestal niet meer met de hand: `.claude/settings.json` bevat een async
+PostToolUse-hook die `.claude/hooks/tailwind-build.sh` aanroept. Die bouwt de assets opnieuw zodra
+een Blade- of CSS-bestand van dit project gewijzigd is (log: `/tmp/tripcrew-vite-build.log`). De
+hook werkt alleen in sessies die Claude Code **in deze map** start — dus in
+`/mnt/c/xampp/htdocs/tripcrew`, niet in de oude kopie onder OneDrive. Bewerk je views in PhpStorm in
+plaats van via Claude, gebruik dan `npm run dev` (Vite-watcher).
+
 Database: MariaDB via XAMPP, database `tripcrew`, gebruiker `root` zonder wachtwoord.
 Inloggen: `coordinator@tripcrew.test` en `reiziger@tripcrew.test`, wachtwoord `password`.
 
