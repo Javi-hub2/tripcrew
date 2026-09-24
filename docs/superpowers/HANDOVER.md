@@ -273,9 +273,13 @@ bezoeker → tripcrew.javiprime41.workers.dev (Worker) → Cloudflare Tunnel →
   (anders delen alle bezoekers één IP voor de rate limiter).
 - De tunnel is een *quick tunnel*: `C:\Users\javis\cloudflared\cloudflared.exe tunnel --url
   http://127.0.0.1:8000`. Die geeft bij elke start een nieuw `*.trycloudflare.com`-adres. Zet dat
-  adres bij `ORIGIN` in `cloudflare/wrangler.jsonc` en deploy opnieuw.
-- Deployen: vanuit de map `cloudflare` met `cmd.exe /c "npx wrangler deploy"`. Wrangler is op
-  Windows ingelogd, niet in WSL.
+  adres bij `ORIGIN` in `wrangler.jsonc` (hoofdmap) en deploy opnieuw.
+- Deployen: vanuit de hoofdmap met `cmd.exe /c "npx wrangler deploy"`. Wrangler is op Windows
+  ingelogd, niet in WSL.
+- **De Worker is aan GitHub gekoppeld (Workers Builds):** elke push naar `main` deployt opnieuw.
+  Daarom staat `wrangler.jsonc` in de hoofdmap. Stond hij in `cloudflare/`, dan zette de build
+  de `public/`-map als lege statische site neer (gebeurd op 2026-09-24: de hele site gaf 404,
+  ook registreren).
 - Online is de site alleen zolang je pc, `artisan serve` en de tunnel aanstaan. Staat de tunnel
   uit, dan toont de Worker "TripCrew is nu niet bereikbaar".
 - `APP_DEBUG=false` in `.env`, zodat bezoekers bij een fout geen stacktraces zien.
