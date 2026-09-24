@@ -8,6 +8,7 @@ use App\Models\ActivityChoice;
 use App\Models\ChecklistItem;
 use App\Models\ProgramItem;
 use App\Models\Trip;
+use App\Models\TripChecklistItem;
 use App\Models\TripDay;
 use App\Models\User;
 use DOMDocument;
@@ -221,5 +222,59 @@ class SnelleHandelingenTest extends TestCase
         $this->assertGreaterThan(0, $xpath->query($formulier($tweede)."//*[contains(@class, 'text-danger')]")->length, 'Fout ontbreekt bij de tweede dag.');
         $this->assertSame('Zonder tijd', $xpath->query($formulier($tweede)."//input[@name='title']")->item(0)->getAttribute('value'));
         $this->assertSame('', $xpath->query($formulier($eerste)."//input[@name='title']")->item(0)->getAttribute('value'));
+    }
+
+    public function test_vaste_checklist_toevoegen_en_verwijderen(): void
+    {
+        $coordinator = User::factory()->coordinator()->create();
+        $trip = Trip::factory()->create();
+        $item = TripChecklistItem::create(['trip_id' => $trip->id, 'label' => 'Paspoort gecontroleerd']);
+        $pagina = route('coordinator.trips.checklist.index', $trip);
+        $html = $this->actingAs($coordinator)->get($pagina)->getContent();
+
+        $this->assertSnelFormulier($html, 'vaste-checklist', route('coordinator.trips.checklist.store', $trip));
+        $this->assertSnelFormulier($html, 'vaste-checklist', route('coordinator.trips.checklist.destroy', [$trip, $item]));
+
+        $na = $this->from($pagina)->followingRedirects()
+            ->post(route('coordinator.trips.checklist.store', $trip), ['label' => 'Reisverzekering geregeld']);
+        $na->assertOk()->assertSee('Reisverzekering geregeld');
+        $this->assertBlok($na->getContent(), 'vaste-checklist');
+
+        // Het laatste punt weg: de lege toestand staat nog binnen het blok.
+        TripChecklistItem::where('label', 'Reisverzekering geregeld')->delete();
+        $na = $this->from($pagina)->followingRedirects()->delete(route('coordinator.trips.checklist.destroy', [$trip, $item]));
+        $na->assertOk()->assertSee('Nog geen vaste checklistpunten voor deze reis.');
+        $this->assertBlok($na->getContent(), 'vaste-checklist');
+    }
+
+    public function test_validatiefout_bij_vaste_checklist_staat_binnen_het_blok(): void
+    {
+        $coordinator = User::factory()->coordinator()->create();
+        $trip = Trip::factory()->create();
+        $pagina = route('coordinator.trips.checklist.index', $trip);
+
+        $na = $this->actingAs($coordinator)->from($pagina)->followingRedirects()
+            ->post(route('coordinator.trips.checklist.store', $trip), ['label' => '']);
+
+        $fout = $this->xpath($na->getContent())->query("//*[@id='vaste-checklist']//*[contains(@class, 'text-danger')]");
+        $this->assertGreaterThan(0, $fout->length, 'De validatiefout staat niet binnen #vaste-checklist.');
+    }
+
+    public function test_vast_checklistpunt_afvinken(): void
+    {
+        $trip = Trip::factory()->create();
+        $traveler = $this->approvedTraveler($trip);
+        $item = TripChecklistItem::create(['trip_id' => $trip->id, 'label' => 'Paspoort gecontroleerd']);
+        $pagina = route('traveler.my-choices', $trip);
+
+        $this->assertSnelFormulier(
+            $this->actingAs($traveler)->get($pagina)->getContent(),
+            'checklist',
+            route('traveler.required-checklist.toggle', [$trip, $item])
+        );
+
+        $na = $this->from($pagina)->followingRedirects()->patch(route('traveler.required-checklist.toggle', [$trip, $item]));
+        $na->assertOk()->assertSee('aria-pressed="true"', false)->assertSee('1 van 1 afgevinkt');
+        $this->assertBlok($na->getContent(), 'checklist');
     }
 }

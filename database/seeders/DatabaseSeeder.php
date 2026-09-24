@@ -7,6 +7,7 @@ use App\Models\ActivityChoice;
 use App\Models\ChecklistItem;
 use App\Models\ProgramItem;
 use App\Models\Trip;
+use App\Models\TripChecklistItem;
 use App\Models\TripDay;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -55,8 +56,18 @@ class DatabaseSeeder extends Seeder
         $travelers = $others->push($demo)->push($invited);
         $trip->registrations()->attach($travelers->pluck('id')->all(), ['status' => \App\Enums\RegistrationStatus::Approved->value, 'requested_at' => now(), 'decided_at' => now()]);
 
+        // Vaste punten van de coördinator; elke reiziger heeft er een willekeurig deel van afgevinkt.
+        $required = collect(['Paspoort gecontroleerd', 'Reisverzekering geregeld', 'Noodcontact doorgegeven'])
+            ->map(fn ($label) => TripChecklistItem::create(['trip_id' => $trip->id, 'label' => $label]));
+
         foreach ($travelers as $traveler) {
-            foreach (['Paspoort gecontroleerd', 'Reisverzekering geregeld', 'Tas ingepakt'] as $label) {
+            foreach ($required as $item) {
+                if (fake()->boolean()) {
+                    $item->completedBy()->attach($traveler);
+                }
+            }
+
+            foreach (['Tas ingepakt', 'Oplader mee'] as $label) {
                 ChecklistItem::create([
                     'user_id' => $traveler->id,
                     'trip_id' => $trip->id,

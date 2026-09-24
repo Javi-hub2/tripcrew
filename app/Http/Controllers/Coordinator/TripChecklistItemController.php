@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreChecklistItemRequest;
+use App\Http\Requests\StoreTripChecklistItemRequest;
 use App\Models\Trip;
 use App\Models\TripChecklistItem;
 use Illuminate\Contracts\View\View;
@@ -22,7 +22,7 @@ class TripChecklistItemController extends Controller
         return view('coordinator.checklist.index', compact('trip', 'items', 'travelerCount'));
     }
 
-    public function store(StoreChecklistItemRequest $request, Trip $trip): RedirectResponse
+    public function store(StoreTripChecklistItemRequest $request, Trip $trip): RedirectResponse
     {
         $this->authorize('update', $trip);
 

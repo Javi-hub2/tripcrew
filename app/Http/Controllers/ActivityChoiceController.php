@@ -24,7 +24,14 @@ class ActivityChoiceController extends Controller
 
         $checklistItems = Auth::user()->checklistItems()->where('trip_id', $trip->id)->get();
 
-        return view('traveler.my-choices', compact('trip', 'choices', 'checklistItems'));
+        // Vaste punten van de coördinator, plus welke daarvan deze reiziger heeft afgevinkt.
+        $requiredItems = $trip->requiredChecklistItems()->get();
+        $doneRequiredIds = Auth::user()->completedTripChecklistItems()
+            ->where('trip_id', $trip->id)
+            ->pluck('trip_checklist_items.id')
+            ->all();
+
+        return view('traveler.my-choices', compact('trip', 'choices', 'checklistItems', 'requiredItems', 'doneRequiredIds'));
     }
 
     /**

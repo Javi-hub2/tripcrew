@@ -1,62 +1,42 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, einde dag. Begin bij het stappenplan hieronder.
+Laatst bijgewerkt: 2026-09-24.
 
-## ▶ Morgen verder: stappenplan
+## Stand op 2026-09-24: toets aan de briefing afgerond
 
-**Stand op 2026-09-23, einde dag.** Je werkt op branch **`feature/toets-restpunten`** (nog niet
-gemerged of gepusht). Daarop staan:
+Branch **`feature/toets-restpunten`** (nog niet gemerged of gepusht). Daarop staan:
 
-- ✅ `326ecc0` Eigen Nederlandse foutpagina's (403, 404, 419, 429, 500, 503) in huisstijl.
-- ✅ `c4f2a07` Dagprogramma per dag: de reiziger kiest een dag (`/reizen/{trip}/{dag}`), zelfde
+- `326ecc0` Eigen Nederlandse foutpagina's (403, 404, 419, 429, 500, 503) in huisstijl.
+- `c4f2a07` Dagprogramma per dag: de reiziger kiest een dag (`/reizen/{trip}/{dag}`), zelfde
   dagkiezer als bij activiteiten (`traveler/_days.blade.php`).
-- 🟡 Tussencommit "wip: vaste checklistpunten": **half af, 4 tests falen met opzet.** Dit is
-  het laatste open punt uit de toets aan de briefing.
+- Vaste checklistpunten (wip-commit `f2c6683` plus de commit die hem afmaakt), zie hieronder.
 
-Eerst: `cd /mnt/c/xampp/htdocs/tripcrew` en `git checkout feature/toets-restpunten`.
-Tests draaien met `C:\xampp\php\php.exe artisan test` (verwacht nu: 4 falen, de rest groen).
+Suite: **142 tests groen**. Mergen naar `main` en pushen doe je zelf, als je dat wilt.
 
-### Vaste checklistpunten afmaken
+### Vaste checklistpunten
 
-Doel: de coördinator legt per reis vaste punten vast ("Paspoort gecontroleerd"), elke reiziger
-vinkt ze zelf af, en het deelnemersoverzicht toont de voltooiing daarvan.
+De coördinator legt per reis vaste punten vast ("Paspoort gecontroleerd") op het nieuwe tabblad
+*Checklist* (`coordinator/checklist/index.blade.php`, `Coordinator/TripChecklistItemController`,
+`StoreTripChecklistItemRequest`). Per punt staat erbij hoeveel reizigers het hebben afgevinkt.
+Toevoegen en verwijderen gaat zonder herladen (blok `#vaste-checklist`).
 
-Al gedaan: migratie `2026_09_23_000002_create_trip_checklist_items_table.php` (twee nieuwe
-tabellen, alleen toevoegend), model `TripChecklistItem` (`completedBy()`, `isDoneBy()`),
-`Trip::requiredChecklistItems()`, routes, tabblad *Checklist* in `coordinator/_nav`,
-`Coordinator/TripChecklistItemController`, `ChecklistItemController::toggleRequired()`, en de
-tests in `tests/Feature/RequiredChecklistTest.php`.
-
-Nog te doen, in deze volgorde:
-
-1. **Eigen FormRequest voor de coördinator.** `TripChecklistItemController::store()` gebruikt nu
-   `StoreChecklistItemRequest`, maar die laat alleen reizigers toe (`isTraveler()`). Maak
-   `StoreTripChecklistItemRequest` (authorize: `isCoordinator()`, regel: `label` verplicht,
-   max 255) en gebruik die. Daarmee gaan "add and see" en "label is required" groen.
-2. **Beheerpagina** `resources/views/coordinator/checklist/index.blade.php`: lijst van de punten
-   met per punt "X van Y reizigers afgevinkt" (`completed_by_count` en `$travelerCount` komen al
-   uit de controller) en een knop Verwijderen; formulier "Punt toevoegen"; lege toestand met
-   precies de tekst "Nog geen vaste checklistpunten voor deze reis." Zet de lijst en de
-   formulieren in een blok `id="vaste-checklist"` met `data-snel="vaste-checklist"`.
-3. **Reiziger** (`traveler/my-choices.blade.php` en `ActivityChoiceController::myChoices()`):
-   bovenaan de checklistkaart een kopje "Van de coördinator" met de vaste punten als
-   afvinkknoppen (route `traveler.required-checklist.toggle`, `data-snel="checklist"`), eigen
-   punten eronder. Geef de vaste punten en de id's die deze reiziger heeft afgevinkt mee vanuit de
-   controller. De teller "X van Y afgevinkt" telt vaste en eigen punten samen.
-4. **Deelnemersoverzicht** (`Coordinator/ParticipantController`): heeft de reis vaste punten, dan
-   is het percentage = afgevinkte vaste punten / aantal vaste punten; anders zoals nu over de
-   eigen punten. Daarmee gaat "completion status counts the required items" groen.
-5. **Snelle handelingen:** in `SnelleHandelingenTest` een test voor `#vaste-checklist` (toevoegen,
-   verwijderen) en voor het afvinken van een vast punt binnen `#checklist`.
-6. **Seeder:** geef de demoreis twee of drie vaste punten, zodat je het direct ziet.
-7. **Database:** `C:\xampp\php\php.exe artisan migrate` (alleen toevoegend; **geen**
-   `migrate:fresh`).
-8. **Controleren:** volledige testsuite groen, en in de browser: punt toevoegen en verwijderen als
-   coördinator, afvinken als reiziger, percentage in Deelnemers, mobiel.
-9. **Documentatie:** regel in de README-tabel "Herleidbaarheid eisen → code", en dit stappenplan
-   vervangen door een korte beschrijving van wat er gebouwd is.
-10. **Afronden:** de wip-commit mag blijven staan of samengevoegd worden; daarna mergen naar `main`
-    en pushen (alleen als je dat zelf wilt).
+- **Reiziger.** Op *Mijn keuzes & checklist* staan de vaste punten bovenaan onder "Van de
+  coördinator", de eigen punten eronder. De teller "X van Y afgevinkt" telt beide soorten.
+  Afvinken gaat via `ChecklistItemController::toggleRequired()` en alleen voor jezelf. De
+  afvinkknop staat in `traveler/_vinkje.blade.php`.
+- **Deelnemersoverzicht.** Heeft de reis vaste punten, dan is het percentage het aantal afgevinkte
+  vaste punten gedeeld door het aantal vaste punten. Eigen punten tellen dan niet mee. Zonder vaste
+  punten blijft het zoals het was.
+- **Database.** Twee nieuwe tabellen (migratie `2026_09_23_000002_…`, alleen toevoegend, al
+  gedraaid op de lokale database). Relaties: `Trip::requiredChecklistItems()`,
+  `TripChecklistItem::completedBy()`, `User::completedTripChecklistItems()`.
+- **Seeder.** De demoreis krijgt drie vaste punten. De lokale database is niet opnieuw geseed:
+  maak de punten daar zelf aan via het tabblad, of draai de seeder op een lege database.
+- **Getest.** `RequiredChecklistTest` (12 tests) en drie extra tests in
+  `SnelleHandelingenTest`. Ook getest in een echte browser (Windows-Chrome via Playwright, tegen een
+  tijdelijke SQLite-database): toevoegen en verwijderen zonder herladen, validatiefout in het blok,
+  afvinken met de juiste teller, percentage bij Deelnemers, geen horizontale scroll op mobiel,
+  geen JS-fouten.
 
 ### Daarna nog open (keuze, niet verplicht)
 
@@ -205,9 +185,8 @@ Bij het naast elkaar leggen van de briefing en de app ontbraken twee gevraagde o
   `TripController::generateDays()` vergelijkt nu in PHP. Test:
   `test_a_trip_whose_days_already_exist_can_be_edited`.
 
-Nog open uit dezelfde toets (keuze van de opdrachtgever): het dagprogramma toont maar één dag, de
-checklist wordt door de reiziger zelf gevuld (dus 0 % bij een nieuwe reiziger), een coördinator kan
-geen reiziger uitnodigen, er zijn geen eigen 403/404-pagina's, en er is geen voortgangsdashboard.
+Uit dezelfde toets zijn daarna afgemaakt: dagprogramma per dag, eigen foutpagina's en vaste
+checklistpunten (zie bovenaan). Nog open: reiziger uitnodigen en een voortgangsdashboard.
 
 ## Na de oplevering gevonden: 403 na inloggen als coördinator
 

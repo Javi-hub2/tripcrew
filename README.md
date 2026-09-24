@@ -33,6 +33,7 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
 | Goedkeuring door coördinator | `Coordinator/RegistrationController`, `coordinator/registrations/index.blade.php` |
 | Programmaonderdelen beheren | `Coordinator/ProgramItemController`, `StoreProgramItemRequest`, `UpdateProgramItemRequest`, `coordinator/program/*.blade.php` |
 | Praktische informatie | kolom `trips.practical_info`, `StoreTripRequest`, `coordinator/trips/_form.blade.php`, `traveler/dashboard.blade.php` |
+| Vaste checklistpunten en voltooiingsstatus | tabellen `trip_checklist_items` en `trip_checklist_item_user`, `Coordinator/TripChecklistItemController`, `StoreTripChecklistItemRequest`, `ChecklistItemController::toggleRequired()`, `Coordinator/ParticipantController`, `coordinator/checklist/index.blade.php`, `traveler/my-choices.blade.php` |
 | Wachtwoordherstel | `Auth/PasswordResetController`, `ResetPasswordRequest`, `auth/forgot-password.blade.php`, `auth/reset-password.blade.php`, `AppServiceProvider` (`ResetPassword::toMailUsing()`) |
 
 ### Ontwerpkeuzes die niet letterlijk in de briefing stonden
@@ -42,6 +43,10 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
   werkstroom in plaats van een directe koppeling. Neem dit op in het technisch ontwerp.
 - Zelfregistratie is toegevoegd; de ERD ging uit van accounts die de coördinator aanmaakt.
   Wie zich zelf registreert krijgt altijd de rol `reiziger`.
+- Checklistpunten zijn er in twee soorten: vaste punten die de coördinator per reis vastlegt
+  (`trip_checklist_items`, afgevinkt per reiziger in `trip_checklist_item_user`) en eigen punten
+  van de reiziger (`checklist_items`). Heeft een reis vaste punten, dan telt het
+  deelnemersoverzicht alleen die mee; anders de eigen punten.
 - Voor Gmail-bezorging is een app-wachtwoord nodig (Google-account → Beveiliging →
   App-wachtwoorden, vereist tweestapsverificatie). Een schoolaccount op Microsoft 365
   blokkeert SMTP en werkt hier niet voor.
@@ -63,8 +68,8 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
 - Stijl "Reisposter": teal-kop met golfrand (`components/hero.blade.php`), kaarten met
   statusband (`components/activity-card.blade.php`), lettertype Instrument Sans (lokaal via
   `@fontsource/instrument-sans`). Kleuren staan als tokens in `resources/css/app.css`.
-- Inschrijven, een activiteit kiezen of annuleren, de checklist en goedkeuren/afwijzen werken
-  zonder dat de pagina herlaadt: `resources/js/snel.js` verstuurt formulieren met
+- Inschrijven, een activiteit kiezen of annuleren, de checklist, vaste checklistpunten beheren
+  en goedkeuren/afwijzen werken zonder dat de pagina herlaadt: `resources/js/snel.js` verstuurt formulieren met
   `data-snel="<id>"` op de achtergrond en ververst alleen het blok met dat id. Zonder
   JavaScript werkt alles gewoon met herladen. Bewaakt door
   `tests/Feature/SnelleHandelingenTest.php`.

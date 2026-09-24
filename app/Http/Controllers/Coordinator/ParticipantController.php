@@ -13,17 +13,25 @@ class ParticipantController extends Controller
     {
         $this->authorize('view', $trip);
 
+        // Heeft de reis vaste punten, dan telt alleen die voltooiing; anders de eigen punten.
+        $requiredCount = $trip->requiredChecklistItems()->count();
+
         $participants = $trip->travelers()
             ->with([
                 'activityChoices' => fn ($q) => $q->whereHas('activity.tripDay', fn ($d) => $d->where('trip_id', $trip->id)),
                 'activityChoices.activity',
-                'checklistItems' => fn ($q) => $q->where('trip_id', $trip->id)])
+                'checklistItems' => fn ($q) => $q->where('trip_id', $trip->id),
+                'completedTripChecklistItems' => fn ($q) => $q->where('trip_id', $trip->id)])
             ->get()
-            ->map(function ($traveler) {
-                $items = $traveler->checklistItems;
-                $percentage = $items->count()
-                    ? (int) round(($items->where('checked', true)->count() / $items->count()) * 100)
-                    : 0;
+            ->map(function ($traveler) use ($requiredCount) {
+                if ($requiredCount) {
+                    $done = $traveler->completedTripChecklistItems->count();
+                    $total = $requiredCount;
+                } else {
+                    $done = $traveler->checklistItems->where('checked', true)->count();
+                    $total = $traveler->checklistItems->count();
+                }
+                $percentage = $total ? (int) round($done / $total * 100) : 0;
 
                 return (object) [
                     'user' => $traveler,
