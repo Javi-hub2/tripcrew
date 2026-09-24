@@ -260,8 +260,29 @@ Inloggen: `coordinator@tripcrew.test` en `reiziger@tripcrew.test`, wachtwoord `p
 
 ## Online zetten via Cloudflare
 
-De site draait nu alleen op XAMPP en gaat later via Cloudflare het internet op. Wat er dan moet
-gebeuren:
+**Stand 2026-09-24: de site staat online op `https://tripcrew.javiprime41.workers.dev`.** Een Worker
+kan geen PHP draaien; het eerdere uploaden van de repo gaf daarom alleen een lege 404. Nu is de
+Worker een doorgeefluik:
+
+```
+bezoeker → tripcrew.javiprime41.workers.dev (Worker) → Cloudflare Tunnel → artisan serve op je pc
+```
+
+- De Worker staat in `cloudflare/worker.js`. Hij zet `X-Forwarded-Host` (zodat Laravel links en
+  redirects met het workers.dev-adres bouwt) en `X-Forwarded-For` met het IP van de bezoeker
+  (anders delen alle bezoekers één IP voor de rate limiter).
+- De tunnel is een *quick tunnel*: `C:\Users\javis\cloudflared\cloudflared.exe tunnel --url
+  http://127.0.0.1:8000`. Die geeft bij elke start een nieuw `*.trycloudflare.com`-adres. Zet dat
+  adres bij `ORIGIN` in `cloudflare/wrangler.jsonc` en deploy opnieuw.
+- Deployen: vanuit de map `cloudflare` met `cmd.exe /c "npx wrangler deploy"`. Wrangler is op
+  Windows ingelogd, niet in WSL.
+- Online is de site alleen zolang je pc, `artisan serve` en de tunnel aanstaan. Staat de tunnel
+  uit, dan toont de Worker "TripCrew is nu niet bereikbaar".
+- `APP_DEBUG=false` in `.env`, zodat bezoekers bij een fout geen stacktraces zien.
+- **Let op:** de demo-accounts (`password`) zijn voor iedereen met het adres bruikbaar.
+
+Voor een definitieve oplossing (altijd online, vast adres) is echte PHP-hosting of een vaste
+tunnel met een eigen domein nodig. Wat er dan moet gebeuren:
 
 1. In `.env`: `APP_ENV=production`, `APP_DEBUG=false`, en `APP_URL=https://<jouw domein>`.
 2. `php artisan config:cache` (en `route:cache`, `view:cache`) na elke `.env`-wijziging.

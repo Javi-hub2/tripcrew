@@ -1,0 +1,11 @@
+{
+    // Deploy vanuit deze map: npx wrangler deploy
+    "name": "tripcrew",
+    "main": "worker.js",
+    "compatibility_date": "2026-09-01",
+    "workers_dev": true,
+    "vars": {
+        // Verandert bij elke herstart van een quick tunnel (trycloudflare.com).
+        "ORIGIN": "https://crown-analog-bald-ecological.trycloudflare.com"
+    }
+}
