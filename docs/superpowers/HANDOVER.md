@@ -4,14 +4,15 @@ Laatst bijgewerkt: 2026-09-24.
 
 ## Stand op 2026-09-24: toets aan de briefing afgerond
 
-Branch **`feature/toets-restpunten`** (nog niet gemerged of gepusht). Daarop staan:
+Branch **`feature/toets-restpunten`**, op 2026-09-24 gemerged naar `main` (merge-commit `7cf521f`)
+en gepusht; de branch is daarna verwijderd. Daarop stonden:
 
 - `326ecc0` Eigen Nederlandse foutpagina's (403, 404, 419, 429, 500, 503) in huisstijl.
 - `c4f2a07` Dagprogramma per dag: de reiziger kiest een dag (`/reizen/{trip}/{dag}`), zelfde
   dagkiezer als bij activiteiten (`traveler/_days.blade.php`).
 - Vaste checklistpunten (wip-commit `f2c6683` plus de commit die hem afmaakt), zie hieronder.
 
-Suite: **142 tests groen**. Mergen naar `main` en pushen doe je zelf, als je dat wilt.
+Suite: **142 tests groen**.
 
 ### Vaste checklistpunten
 
@@ -90,7 +91,8 @@ Ontwerp: `docs/superpowers/specs/2026-09-23-reisposter-restyling-design.md`. Kle
 
 `https://github.com/Javi-hub2/tripcrew` (openbaar). Al het werk staat op **`main`**: PR #1
 (`feature/registratie-mail-reset`) is op 2026-09-23 gemerged met merge-commit `6329811`, daarna is
-de branch lokaal en op GitHub verwijderd. Nieuw werk begint op een nieuwe branch vanaf `main`.
+de branch lokaal en op GitHub verwijderd. Op 2026-09-24 is `feature/toets-restpunten` op dezelfde
+manier gemerged (`7cf521f`) en verwijderd. Nieuw werk begint op een nieuwe branch vanaf `main`.
 
 ## Wat wordt hier gebouwd
 
