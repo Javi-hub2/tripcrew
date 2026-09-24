@@ -1,6 +1,52 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-23, na de reisposter-restyling en de snelle handelingen.
+Laatst bijgewerkt: 2026-09-24.
+
+## Stand op 2026-09-24: toets aan de briefing afgerond
+
+Branch **`feature/toets-restpunten`** (nog niet gemerged of gepusht). Daarop staan:
+
+- `326ecc0` Eigen Nederlandse foutpagina's (403, 404, 419, 429, 500, 503) in huisstijl.
+- `c4f2a07` Dagprogramma per dag: de reiziger kiest een dag (`/reizen/{trip}/{dag}`), zelfde
+  dagkiezer als bij activiteiten (`traveler/_days.blade.php`).
+- Vaste checklistpunten (wip-commit `f2c6683` plus de commit die hem afmaakt), zie hieronder.
+
+Suite: **142 tests groen**. Mergen naar `main` en pushen doe je zelf, als je dat wilt.
+
+### Vaste checklistpunten
+
+De coördinator legt per reis vaste punten vast ("Paspoort gecontroleerd") op het nieuwe tabblad
+*Checklist* (`coordinator/checklist/index.blade.php`, `Coordinator/TripChecklistItemController`,
+`StoreTripChecklistItemRequest`). Per punt staat erbij hoeveel reizigers het hebben afgevinkt.
+Toevoegen en verwijderen gaat zonder herladen (blok `#vaste-checklist`).
+
+- **Reiziger.** Op *Mijn keuzes & checklist* staan de vaste punten bovenaan onder "Van de
+  coördinator", de eigen punten eronder. De teller "X van Y afgevinkt" telt beide soorten.
+  Afvinken gaat via `ChecklistItemController::toggleRequired()` en alleen voor jezelf. De
+  afvinkknop staat in `traveler/_vinkje.blade.php`.
+- **Deelnemersoverzicht.** Heeft de reis vaste punten, dan is het percentage het aantal afgevinkte
+  vaste punten gedeeld door het aantal vaste punten. Eigen punten tellen dan niet mee. Zonder vaste
+  punten blijft het zoals het was.
+- **Database.** Twee nieuwe tabellen (migratie `2026_09_23_000002_…`, alleen toevoegend, al
+  gedraaid op de lokale database). Relaties: `Trip::requiredChecklistItems()`,
+  `TripChecklistItem::completedBy()`, `User::completedTripChecklistItems()`.
+- **Seeder.** De demoreis krijgt drie vaste punten. De lokale database is niet opnieuw geseed:
+  maak de punten daar zelf aan via het tabblad, of draai de seeder op een lege database.
+- **Getest.** `RequiredChecklistTest` (12 tests) en drie extra tests in
+  `SnelleHandelingenTest`. Ook getest in een echte browser (Windows-Chrome via Playwright, tegen een
+  tijdelijke SQLite-database): toevoegen en verwijderen zonder herladen, validatiefout in het blok,
+  afvinken met de juiste teller, percentage bij Deelnemers, geen horizontale scroll op mobiel,
+  geen JS-fouten.
+
+### Daarna nog open (keuze, niet verplicht)
+
+- **Reiziger uitnodigen door de coördinator.** Nu registreert een reiziger zich zelf en keurt de
+  coördinator goed. De briefing zegt "account activeren voor een geboekte reis"; overleg met je
+  docent of zelfregistratie volstaat of dat de coördinator ook iemand moet kunnen uitnodigen.
+- **Voortgangsdashboard voor coördinatoren.** De bijlage noemt dit als *mogelijke* indeling:
+  per reis in één oogopslag hoeveel checklists af zijn en hoe vol de activiteiten zitten.
+- **Kleuren verantwoorden.** De briefing geeft navy/cyaan/oranje als richting; de app gebruikt
+  teal/zand/oranje (mag volgens de briefing). Noem de reden in je verantwoording.
 
 ## Stand: de mail wordt echt verstuurd
 
@@ -139,9 +185,8 @@ Bij het naast elkaar leggen van de briefing en de app ontbraken twee gevraagde o
   `TripController::generateDays()` vergelijkt nu in PHP. Test:
   `test_a_trip_whose_days_already_exist_can_be_edited`.
 
-Nog open uit dezelfde toets (keuze van de opdrachtgever): het dagprogramma toont maar één dag, de
-checklist wordt door de reiziger zelf gevuld (dus 0 % bij een nieuwe reiziger), een coördinator kan
-geen reiziger uitnodigen, er zijn geen eigen 403/404-pagina's, en er is geen voortgangsdashboard.
+Uit dezelfde toets zijn daarna afgemaakt: dagprogramma per dag, eigen foutpagina's en vaste
+checklistpunten (zie bovenaan). Nog open: reiziger uitnodigen en een voortgangsdashboard.
 
 ## Na de oplevering gevonden: 403 na inloggen als coördinator
 

@@ -4,6 +4,7 @@
         ['coordinator.trips.edit', route('coordinator.trips.edit', $trip), 'Reis bewerken'],
         ['coordinator.trips.program.*', route('coordinator.trips.program.index', $trip), 'Programma'],
         ['coordinator.trips.activities.*', route('coordinator.trips.activities.index', $trip), 'Activiteiten'],
+        ['coordinator.trips.checklist.*', route('coordinator.trips.checklist.index', $trip), 'Checklist'],
         ['coordinator.trips.participants.*', route('coordinator.trips.participants.index', $trip), 'Deelnemers'],
     ] as [$patroon, $url, $label])
         <a href="{{ $url }}"

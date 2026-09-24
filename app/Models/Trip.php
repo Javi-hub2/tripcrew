@@ -51,6 +51,12 @@ class Trip extends Model
         return $this->hasMany(ChecklistItem::class);
     }
 
+    /** Vaste checklistpunten die de coördinator voor deze reis heeft vastgelegd. */
+    public function requiredChecklistItems(): HasMany
+    {
+        return $this->hasMany(TripChecklistItem::class)->orderBy('id');
+    }
+
     /** FE-06 foutgeval: reis met gekoppelde deelnemers kan niet zomaar verwijderd worden. */
     public function hasParticipants(): bool
     {

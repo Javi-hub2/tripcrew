@@ -73,4 +73,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(ChecklistItem::class);
     }
+
+    /** Vaste checklistpunten van de coördinator die deze reiziger heeft afgevinkt. */
+    public function completedTripChecklistItems(): BelongsToMany
+    {
+        return $this->belongsToMany(TripChecklistItem::class)->withTimestamps();
+    }
 }
