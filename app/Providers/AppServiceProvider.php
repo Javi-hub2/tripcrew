@@ -8,9 +8,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoTransportFactory;
+use Symfony\Component\Mailer\Transport\Dsn;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiters();
+        $this->registerBrevoMailer();
 
         // 'mail' is een door Laravel gereserveerd voorvoegsel: `<x-mail::..>` rendert
         // altijd via view('mail::...'), en Laravel's markdown-mailrenderer overschrijft
@@ -77,6 +81,18 @@ class AppServiceProvider extends ServiceProvider
                 ->by($formulier.'|'.$request->ip())
                 ->response(fn () => $this->tooManyAttempts($request)));
         }
+    }
+
+    /**
+     * Railway blokkeert uitgaande SMTP (poort 25, 465 en 587) op de gratis en Hobby-plannen,
+     * dus online gaat de mail via de HTTPS-API van Brevo (MAIL_MAILER=brevo). Lokaal blijft
+     * het gewoon Gmail-SMTP.
+     */
+    private function registerBrevoMailer(): void
+    {
+        Mail::extend('brevo', fn () => (new BrevoTransportFactory)->create(
+            new Dsn('brevo+api', 'default', config('services.brevo.key'))
+        ));
     }
 
     private function tooManyAttempts(Request $request): RedirectResponse
