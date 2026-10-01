@@ -1,10 +1,26 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-28.
+Laatst bijgewerkt: 2026-10-01.
+
+## Stand op 2026-10-01: voortgangsdashboard voor coördinatoren
+
+Branch **`feature/voortgangsdashboard`**, op 2026-10-01 gemerged naar `main` en gepusht. Het reizenoverzicht
+(`coordinator/trips/index`) toont nu per reis:
+
+- **Checklists:** "X van Y deelnemers klaar", met balk (groen als iedereen klaar is). Klaar = 100 %,
+  volgens dezelfde regel als het deelnemersoverzicht. Die regel staat nu op één plek:
+  `Trip::checklistPercentages()`, ook gebruikt door `ParticipantController`.
+- **Activiteiten:** "X van Y plekken bezet · N activiteit(en) vol", met balk (oranje vanaf 75 %).
+  Nieuwe relatie `Trip::activities()` (via de dagen).
+- **Aanvragen:** "N aanvraag/aanvragen open" voor die reis, met een link naar Aanvragen.
+- Lege toestand: "Nog geen deelnemers" en "Nog geen activiteiten".
+
+Tests: `VoortgangsdashboardTest` (7). Suite na het mergen van beide branches: **150 groen**.
+Ook in Chrome bekeken (desktop en 375 px): geen horizontale scroll, geen JS-fouten.
 
 ## Stand op 2026-09-28: klaar om los van je pc online te zetten (Railway)
 
-Branch **`feature/online-hosting`** (nog niet gemerged). Een Worker kan geen PHP/MySQL draaien,
+Branch **`feature/online-hosting`**, op 2026-10-01 gemerged naar `main` en gepusht. Een Worker kan geen PHP/MySQL draaien,
 dus TripCrew gaat online op Railway (Docker + MySQL); je pc hoeft dan niet meer aan. Stappen:
 `docs/online-zetten.md`.
 
@@ -12,7 +28,7 @@ dus TripCrew gaat online op Railway (Docker + MySQL); je pc hoeft dan niet meer 
   Docker Desktop tegen een MySQL-container: migreren, seeden, inloggen als coördinator, CSS,
   https-links achter een proxy en de 404-pagina werken.
 - Mailer `brevo` (HTTPS-API), want Railway blokkeert SMTP op de gratis/Hobby-plannen.
-  `BrevoMailerTest`; suite nu **143 tests groen**.
+  `BrevoMailerTest`; suite toen **143 tests groen**.
 - `fakerphp/faker` staat nu bij `require` (niet meer `require-dev`), anders kan de seeder online
   geen coördinator aanmaken.
 - Nog door jou te doen: Brevo- en Railway-account, variabelen invullen, seeden en de
@@ -60,8 +76,7 @@ Toevoegen en verwijderen gaat zonder herladen (blok `#vaste-checklist`).
 - **Reiziger uitnodigen door de coördinator.** Nu registreert een reiziger zich zelf en keurt de
   coördinator goed. De briefing zegt "account activeren voor een geboekte reis"; overleg met je
   docent of zelfregistratie volstaat of dat de coördinator ook iemand moet kunnen uitnodigen.
-- **Voortgangsdashboard voor coördinatoren.** De bijlage noemt dit als *mogelijke* indeling:
-  per reis in één oogopslag hoeveel checklists af zijn en hoe vol de activiteiten zitten.
+- ~~Voortgangsdashboard voor coördinatoren~~ — gedaan op 2026-10-01 (zie bovenaan).
 - **Kleuren verantwoorden.** De briefing geeft navy/cyaan/oranje als richting; de app gebruikt
   teal/zand/oranje (mag volgens de briefing). Noem de reden in je verantwoording.
 
@@ -204,7 +219,7 @@ Bij het naast elkaar leggen van de briefing en de app ontbraken twee gevraagde o
   `test_a_trip_whose_days_already_exist_can_be_edited`.
 
 Uit dezelfde toets zijn daarna afgemaakt: dagprogramma per dag, eigen foutpagina's en vaste
-checklistpunten (zie bovenaan). Nog open: reiziger uitnodigen en een voortgangsdashboard.
+checklistpunten (zie bovenaan). Nog open: reiziger uitnodigen (het voortgangsdashboard is op 2026-10-01 gebouwd).
 
 ## Na de oplevering gevonden: 403 na inloggen als coördinator
 
