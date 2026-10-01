@@ -1,6 +1,6 @@
 # TripCrew online zetten (Railway)
 
-Een Cloudflare Worker kan geen PHP en geen MySQL draaien. Daarom draait TripCrew online op
+TripCrew draait online op
 [Railway](https://railway.com): Railway bouwt de `Dockerfile` in de hoofdmap van de repo en
 zet er een MySQL-database naast. Je computer hoeft dan niet meer aan te staan.
 
@@ -86,15 +86,6 @@ php artisan tinker --execute="App\Models\User::where('email', 'coordinator@tripc
 
 Doe hetzelfde voor `reiziger@tripcrew.test`, of laat de demo-accounts weg als je ze niet nodig
 hebt.
-
-## 4. Het workers.dev-adres houden (optioneel)
-
-Wil je `tripcrew.javiprime41.workers.dev` blijven gebruiken, zet dan in `wrangler.jsonc` bij
-`ORIGIN` het Railway-adres (bijv. `https://tripcrew-production.up.railway.app`) en maak
-`APP_URL` op Railway gelijk aan het workers.dev-adres. Na een push bouwt Cloudflare de Worker
-opnieuw. De tunnel en XAMPP heb je dan niet meer nodig.
-
-Zonder Worker kun je gewoon het Railway-adres delen.
 
 ## Kosten
 

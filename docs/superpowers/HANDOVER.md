@@ -20,8 +20,7 @@ Ook in Chrome bekeken (desktop en 375 px): geen horizontale scroll, geen JS-fout
 
 ## Stand op 2026-09-28: klaar om los van je pc online te zetten (Railway)
 
-Branch **`feature/online-hosting`**, op 2026-10-01 gemerged naar `main` en gepusht. Een Worker kan geen PHP/MySQL draaien,
-dus TripCrew gaat online op Railway (Docker + MySQL); je pc hoeft dan niet meer aan. Stappen:
+Branch **`feature/online-hosting`**, op 2026-10-01 gemerged naar `main` en gepusht. TripCrew gaat online op Railway (Docker + MySQL); je pc hoeft dan niet meer aan. Stappen:
 `docs/online-zetten.md`.
 
 - `Dockerfile` + `docker/start.sh` (Apache, PHP 8.3, migraties bij elke start). Getest met
@@ -32,7 +31,7 @@ dus TripCrew gaat online op Railway (Docker + MySQL); je pc hoeft dan niet meer 
 - `fakerphp/faker` staat nu bij `require` (niet meer `require-dev`), anders kan de seeder online
   geen coördinator aanmaken.
 - Nog door jou te doen: Brevo- en Railway-account, variabelen invullen, seeden en de
-  demowachtwoorden wijzigen. Daarna eventueel `ORIGIN` in `wrangler.jsonc` naar het Railway-adres.
+  demowachtwoorden wijzigen.
 
 ## Stand op 2026-09-24: toets aan de briefing afgerond
 
@@ -289,50 +288,19 @@ Inloggen: `coordinator@tripcrew.test` en `reiziger@tripcrew.test`, wachtwoord `p
 
 **Draai geen `migrate:fresh`, `migrate:rollback` of `db:wipe` zonder te vragen.**
 
-## Online zetten via Cloudflare
+## Cloudflare: gestopt (2026-10-01)
 
-**Stand 2026-09-24: de site staat online op `https://tripcrew.javiprime41.workers.dev`.** Een Worker
-kan geen PHP draaien; het eerdere uploaden van de repo gaf daarom alleen een lege 404. Nu is de
-Worker een doorgeefluik:
-
-```
-bezoeker → tripcrew.javiprime41.workers.dev (Worker) → Cloudflare Tunnel → artisan serve op je pc
-```
-
-- De Worker staat in `cloudflare/worker.js`. Hij zet `X-Forwarded-Host` (zodat Laravel links en
-  redirects met het workers.dev-adres bouwt) en `X-Forwarded-For` met het IP van de bezoeker
-  (anders delen alle bezoekers één IP voor de rate limiter).
-- De tunnel is een *quick tunnel*: `C:\Users\javis\cloudflared\cloudflared.exe tunnel --url
-  http://127.0.0.1:8000`. Die geeft bij elke start een nieuw `*.trycloudflare.com`-adres. Zet dat
-  adres bij `ORIGIN` in `wrangler.jsonc` (hoofdmap) en deploy opnieuw.
-- Deployen: vanuit de hoofdmap met `cmd.exe /c "npx wrangler deploy"`. Wrangler is op Windows
-  ingelogd, niet in WSL.
-- **De Worker is aan GitHub gekoppeld (Workers Builds):** elke push naar `main` deployt opnieuw.
-  Daarom staat `wrangler.jsonc` in de hoofdmap. Stond hij in `cloudflare/`, dan zette de build
-  de `public/`-map als lege statische site neer (gebeurd op 2026-09-24: de hele site gaf 404,
-  ook registreren).
-- Online is de site alleen zolang je pc, `artisan serve` en de tunnel aanstaan. Staat de tunnel
-  uit, dan toont de Worker "TripCrew is nu niet bereikbaar".
-- `APP_DEBUG=false` in `.env`, zodat bezoekers bij een fout geen stacktraces zien.
-- **Let op:** de demo-accounts (`password`) zijn voor iedereen met het adres bruikbaar.
-
-Voor een definitieve oplossing (altijd online, vast adres) is echte PHP-hosting of een vaste
-tunnel met een eigen domein nodig. Wat er dan moet gebeuren:
-
-1. In `.env`: `APP_ENV=production`, `APP_DEBUG=false`, en `APP_URL=https://<jouw domein>`.
-2. `php artisan config:cache` (en `route:cache`, `view:cache`) na elke `.env`-wijziging.
-3. De afzender verhuizen naar het eigen domein: een transactionele maildienst (Brevo, Resend) met
-   DNS-verificatie via Cloudflare in plaats van een persoonlijk Gmail-adres. Gmail blijft werken,
-   maar mail van een privéadres aan onbekenden belandt vaker in spam.
-4. Lees punt A hierboven opnieuw: met echte bezorging is het responstijdlek bij registreren en
-   wachtwoordherstel weer meetbaar. Dat is het moment om de mails in een wachtrij te zetten.
+Van 2026-09-24 tot 2026-10-01 stond TripCrew online via een Cloudflare Worker en een tunnel naar
+deze pc. Daar is mee gestopt: `cloudflare/worker.js`, `wrangler.jsonc` en `.wrangler/` zijn
+verwijderd. Online zetten gaat nu via Railway (`docs/online-zetten.md`). Terughalen kan met
+`git show 2929695:wrangler.jsonc` en `git show 2929695:cloudflare/worker.js`.
 
 **Al geregeld, niet weghalen:** `bootstrap/app.php` vertrouwt de `X-Forwarded-*`-headers
-(`trustProxies(at: '*')`). Cloudflare beëindigt https en stuurt het request intern als http door;
+(`trustProxies(at: '*')`). De proxy van Railway beëindigt https en stuurt het request intern als http door;
 zonder dat vertrouwen bouwt `route()` in `ActivationMail` een link met `http://` en de interne host,
 en mailen we bezoekers een kapotte activatielink. `tests/Feature/ActivationLinkTest.php` dekt beide
 kanten af: met proxyheaders wordt de link `https://<domein>/...`, zonder blijft hij gewoon http.
-Staat de app achter iets anders dan Cloudflare, beperk `at:` dan tot de IP-reeksen van die proxy.
+Wil je dit strakker, beperk `at:` dan tot de IP-reeksen van die proxy.
 
 ## Beslissingen die onderweg genomen zijn
 

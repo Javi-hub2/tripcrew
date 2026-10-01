@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
- * De activatielink moet kloppen zodra de site achter Cloudflare staat. Daar komt
+ * De activatielink moet kloppen zodra de site achter een proxy (Railway) staat. Daar komt
  * het request bij Laravel binnen als http op een intern adres; dat het van buiten
  * https was, staat alleen in de X-Forwarded-headers. Vertrouwt Laravel die niet,
  * dan mailen we onze bezoekers een link naar http:// en de verkeerde host.

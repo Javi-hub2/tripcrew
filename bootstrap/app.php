@@ -11,8 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Straks staat de site achter Cloudflare: die beëindigt https en stuurt het
-        // request intern als http door. Zonder de X-Forwarded-headers te vertrouwen
+        // Online staat de site achter de proxy van Railway: die beëindigt https en stuurt
+        // het request intern als http door. Zonder de X-Forwarded-headers te vertrouwen
         // bouwt route() links met http:// en de interne host — en dan mailen we
         // bezoekers een kapotte activatielink. Zie ActivationLinkTest.
         $middleware->trustProxies(at: '*');

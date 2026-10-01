@@ -3,7 +3,6 @@
 .env.*
 !.env.example
 .idea
-.wrangler
 .superpowers
 .claude
 node_modules
