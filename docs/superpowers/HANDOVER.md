@@ -1,6 +1,22 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-24.
+Laatst bijgewerkt: 2026-09-28.
+
+## Stand op 2026-09-28: klaar om los van je pc online te zetten (Railway)
+
+Branch **`feature/online-hosting`** (nog niet gemerged). Een Worker kan geen PHP/MySQL draaien,
+dus TripCrew gaat online op Railway (Docker + MySQL); je pc hoeft dan niet meer aan. Stappen:
+`docs/online-zetten.md`.
+
+- `Dockerfile` + `docker/start.sh` (Apache, PHP 8.3, migraties bij elke start). Getest met
+  Docker Desktop tegen een MySQL-container: migreren, seeden, inloggen als coördinator, CSS,
+  https-links achter een proxy en de 404-pagina werken.
+- Mailer `brevo` (HTTPS-API), want Railway blokkeert SMTP op de gratis/Hobby-plannen.
+  `BrevoMailerTest`; suite nu **143 tests groen**.
+- `fakerphp/faker` staat nu bij `require` (niet meer `require-dev`), anders kan de seeder online
+  geen coördinator aanmaken.
+- Nog door jou te doen: Brevo- en Railway-account, variabelen invullen, seeden en de
+  demowachtwoorden wijzigen. Daarna eventueel `ORIGIN` in `wrangler.jsonc` naar het Railway-adres.
 
 ## Stand op 2026-09-24: toets aan de briefing afgerond
 
