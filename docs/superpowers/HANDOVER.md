@@ -1,6 +1,25 @@
 # Overdracht — waar staat dit werk?
 
-Laatst bijgewerkt: 2026-09-24.
+Laatst bijgewerkt: 2026-10-01.
+
+## Stand op 2026-10-01: voortgangsdashboard voor coördinatoren
+
+Branch **`feature/voortgangsdashboard`** (vanaf `main`, nog niet gemerged). Het reizenoverzicht
+(`coordinator/trips/index`) toont nu per reis:
+
+- **Checklists:** "X van Y deelnemers klaar", met balk (groen als iedereen klaar is). Klaar = 100 %,
+  volgens dezelfde regel als het deelnemersoverzicht. Die regel staat nu op één plek:
+  `Trip::checklistPercentages()`, ook gebruikt door `ParticipantController`.
+- **Activiteiten:** "X van Y plekken bezet · N activiteit(en) vol", met balk (oranje vanaf 75 %).
+  Nieuwe relatie `Trip::activities()` (via de dagen).
+- **Aanvragen:** "N aanvraag/aanvragen open" voor die reis, met een link naar Aanvragen.
+- Lege toestand: "Nog geen deelnemers" en "Nog geen activiteiten".
+
+Tests: `VoortgangsdashboardTest` (7). Suite op deze branch: **149 groen** (142 van `main` + 7).
+Ook in Chrome bekeken (desktop en 375 px): geen horizontale scroll, geen JS-fouten.
+
+Let op: `feature/online-hosting` (Railway) staat hier los van en is ook nog niet gemerged. Bij het
+mergen van beide botst alleen dit bestand: houd dan beide "Stand op"-blokken bovenaan.
 
 ## Stand op 2026-09-24: toets aan de briefing afgerond
 
