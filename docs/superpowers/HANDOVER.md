@@ -44,8 +44,7 @@ Toevoegen en verwijderen gaat zonder herladen (blok `#vaste-checklist`).
 - **Reiziger uitnodigen door de coördinator.** Nu registreert een reiziger zich zelf en keurt de
   coördinator goed. De briefing zegt "account activeren voor een geboekte reis"; overleg met je
   docent of zelfregistratie volstaat of dat de coördinator ook iemand moet kunnen uitnodigen.
-- **Voortgangsdashboard voor coördinatoren.** De bijlage noemt dit als *mogelijke* indeling:
-  per reis in één oogopslag hoeveel checklists af zijn en hoe vol de activiteiten zitten.
+- ~~Voortgangsdashboard voor coördinatoren~~ — gedaan op 2026-10-01 (zie bovenaan).
 - **Kleuren verantwoorden.** De briefing geeft navy/cyaan/oranje als richting; de app gebruikt
   teal/zand/oranje (mag volgens de briefing). Noem de reden in je verantwoording.
 
@@ -188,7 +187,7 @@ Bij het naast elkaar leggen van de briefing en de app ontbraken twee gevraagde o
   `test_a_trip_whose_days_already_exist_can_be_edited`.
 
 Uit dezelfde toets zijn daarna afgemaakt: dagprogramma per dag, eigen foutpagina's en vaste
-checklistpunten (zie bovenaan). Nog open: reiziger uitnodigen en een voortgangsdashboard.
+checklistpunten (zie bovenaan). Nog open: reiziger uitnodigen (het voortgangsdashboard is op 2026-10-01 gebouwd).
 
 ## Na de oplevering gevonden: 403 na inloggen als coördinator
 

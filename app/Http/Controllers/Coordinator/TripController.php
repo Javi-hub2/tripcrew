@@ -19,7 +19,17 @@ class TripController extends Controller
     {
         $this->authorize('viewAny', Trip::class);
 
-        $trips = Trip::withCount('travelers')->orderBy('start_date')->get();
+        // Voortgangsdashboard: per reis checklistvoortgang en bezetting van de activiteiten.
+        $trips = Trip::withCount(['travelers', 'pendingRegistrations'])
+            ->with(['activities' => fn ($q) => $q->withCount('choices')])
+            ->orderBy('start_date')
+            ->get()
+            ->each(function (Trip $trip) {
+                $trip->checklists_done = collect($trip->checklistPercentages())->filter(fn ($pct) => $pct === 100)->count();
+                $trip->seats_taken = $trip->activities->sum('choices_count');
+                $trip->seats_total = $trip->activities->sum('capacity');
+                $trip->activities_full = $trip->activities->filter(fn ($a) => $a->choices_count >= $a->capacity)->count();
+            });
 
         // Aantal openstaande aanvragen over alle reizen heen (eindreview: de
         // coördinator had vanaf dit scherm geen weg naar het aanvragenscherm).
