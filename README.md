@@ -28,6 +28,18 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
 
 | Eis | Waar |
 |---|---|
+| FE-01 Account activeren | `Auth/ActivationController`, `ActivateAccountRequest`, `auth/activate.blade.php` |
+| FE-02 Inloggen | `Auth/LoginController`, `DashboardController`, `auth/login.blade.php` |
+| FE-03 Dagprogramma bekijken | `TravelerProgramController::dashboard()`, `traveler/dashboard.blade.php`, `traveler/_days.blade.php` |
+| FE-04 Activiteit kiezen | `ActivityChoiceController::store()`, `ActivityPolicy::choose()`, `traveler/activities.blade.php` |
+| FE-05 Keuze annuleren en checklist | `ActivityChoiceController::destroy()`, `ActivityChoicePolicy`, `ChecklistItemController`, `traveler/my-choices.blade.php` |
+| FE-06 Reizen beheren | `Coordinator/TripController`, `StoreTripRequest`, `TripPolicy`, `coordinator/trips/*.blade.php` |
+| FE-07 Activiteiten beheren | `Coordinator/ActivityController`, `StoreActivityRequest`, `ActivityPolicy`, `coordinator/activities/*.blade.php` |
+| FE-08 Deelnemersoverzicht | `Coordinator/ParticipantController`, `Trip::checklistPercentages()`, `coordinator/participants/index.blade.php` |
+| TE-02 Wachtwoorden gehasht | cast `'password' => 'hashed'` in `User`, `Hash::make()` in de auth-controllers |
+| TE-03 Toegang per rol en eigenaar | `EnsureRole` (`role:`-middleware in `routes/web.php`), `Policies/*`, 404 bij een id uit een andere reis |
+| TE-05 Geen overboeking | `ActivityChoiceController::store()` (transactie met `lockForUpdate()`) |
+| Voortgangsdashboard | `Coordinator/TripController::index()`, `coordinator/trips/index.blade.php` |
 | Zelfregistratie | `Auth/RegisterController`, `RegisterRequest`, `Mail/ActivationMail`, `auth/register.blade.php` |
 | Inschrijven voor een reis | `TripRegistrationController`, `traveler/register-trip.blade.php` |
 | Goedkeuring door coördinator | `Coordinator/RegistrationController`, `coordinator/registrations/index.blade.php` |
@@ -53,6 +65,13 @@ Alleen voor lokaal gebruik; de accounts worden aangemaakt in `database/seeders/D
 - De maillayout wordt gebruikt via `<x-app-mail::layout>` en niet `<x-mail::layout>`; het
   voorvoegsel `mail` is bij Laravel gereserveerd voor het ingebouwde markdown-mailsysteem
   en wordt daardoor tijdens het renderen van zo'n mail overschreven.
+- Wordt de periode van een reis ingekort, dan verdwijnen de lege dagen buiten de nieuwe
+  periode. Een dag waar al programma of een activiteit aan hangt blijft staan, zodat de
+  coördinator niets kwijtraakt; die verplaatst of verwijdert hij zelf.
+- Kleuren: de briefing noemt navy/cyaan/oranje als richting; de app gebruikt teal/zand/oranje
+  (stijl "Reisposter"). De briefing laat dat vrij.
+- Online gaat de mail via de HTTPS-API van Brevo (`MAIL_MAILER=brevo`), omdat Railway SMTP
+  blokkeert; lokaal via Gmail-SMTP.
 - Bij registratie wordt altijd een wachtwoordhash berekend, ook wanneer het e-mailadres al
   bestaat en er dus niets wordt opgeslagen. Dat is bewust: zonder dat rekenwerk verraadt de
   responstijd of een adres al een account heeft.

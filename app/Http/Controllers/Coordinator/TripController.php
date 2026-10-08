@@ -69,10 +69,15 @@ class TripController extends Controller
         $data = $request->validated();
         $trip->update($data);
 
-        // Dagen opnieuw opbouwen als de periode is gewijzigd (eenvoudige aanpak
-        // voor de MVP: bestaande dagen buiten de nieuwe periode blijven staan
-        // als er al programma/activiteiten aan hangen, nieuwe dagen worden
-        // aangemaakt voor de uitgebreide periode).
+        // Dagen opnieuw opbouwen als de periode is gewijzigd: lege dagen buiten de nieuwe
+        // periode verdwijnen, dagen waar al programma of activiteiten aan hangen blijven
+        // staan (er gaat niets verloren), en voor de uitgebreide periode komen dagen bij.
+        $trip->days()
+            ->where(fn ($q) => $q->whereDate('date', '<', $data['start_date'])->orWhereDate('date', '>', $data['end_date']))
+            ->whereDoesntHave('programItems')
+            ->whereDoesntHave('activities')
+            ->delete();
+
         $this->generateDays($trip, $data['start_date'], $data['end_date']);
 
         return redirect()->route('coordinator.trips.index')->with('success', 'Reis bijgewerkt.');

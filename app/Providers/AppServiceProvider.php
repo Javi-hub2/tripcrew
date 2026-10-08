@@ -17,6 +17,9 @@ use Symfony\Component\Mailer\Transport\Dsn;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /** Zelfde tekst op alle drie de openbare formulieren. */
+    private const TOO_MANY = 'Te veel pogingen. Wacht een minuut en probeer het opnieuw.';
+
     /**
      * Register any application services.
      */
@@ -28,9 +31,6 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    /** Zelfde tekst op alle drie de openbare formulieren. */
-    private const TOO_MANY = 'Te veel pogingen. Wacht een minuut en probeer het opnieuw.';
-
     public function boot(): void
     {
         $this->configureRateLimiters();

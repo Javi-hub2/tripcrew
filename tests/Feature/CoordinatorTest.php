@@ -208,12 +208,6 @@ class CoordinatorTest extends TestCase
     }
 
     /**
-     * Eindreview-restpunt: update() riep als enige actie de ActivityPolicy niet aan.
-     * Rol-middleware en StoreActivityRequest laten nu toevallig dezelfde mensen door,
-     * dus met een reiziger valt dat niet te zien. Daarom een policy die alles weigert:
-     * dan moet ook update() weigeren.
-     */
-    /**
      * Gevonden bij de browsercontrole: een reis bewerken waarvan de dagen al bestonden gaf
      * op SQLite een 500. firstOrCreate zocht op '2030-06-01', maar de date-cast slaat
      * '2030-06-01 00:00:00' op, dus de bestaande dag werd niet gevonden en de unieke index
@@ -235,6 +229,37 @@ class CoordinatorTest extends TestCase
         $this->assertSame(4, $trip->days()->count(), 'Er moet precies één dag bijkomen, geen dubbele.');
     }
 
+    /**
+     * Checklist-controle: een ingekorte periode liet lege dagen buiten de reis staan, die
+     * de reiziger daarna nog in de dagkiezer zag. Lege dagen gaan weg; een dag waar al
+     * programma of een activiteit aan hangt blijft staan, zodat er niets verloren gaat.
+     */
+    public function test_shortening_a_trip_removes_empty_days_outside_the_new_period(): void
+    {
+        $coordinator = User::factory()->coordinator()->create();
+        $this->actingAs($coordinator)->post(route('coordinator.trips.store'), [
+            'name' => 'Praag 2030', 'start_date' => '2030-06-01', 'end_date' => '2030-06-05',
+        ]);
+        $trip = Trip::where('name', 'Praag 2030')->firstOrFail();
+        $dayWithActivity = $trip->days()->whereDate('date', '2030-06-05')->firstOrFail();
+        Activity::factory()->create(['trip_day_id' => $dayWithActivity->id]);
+
+        $this->put(route('coordinator.trips.update', $trip), [
+            'name' => 'Praag 2030', 'start_date' => '2030-06-02', 'end_date' => '2030-06-03',
+        ])->assertSessionHas('success');
+
+        $this->assertSame(
+            ['2030-06-02', '2030-06-03', '2030-06-05'],
+            $trip->days()->get()->map(fn ($day) => $day->date->toDateString())->all(),
+        );
+    }
+
+    /**
+     * Eindreview-restpunt: update() riep als enige actie de ActivityPolicy niet aan.
+     * Rol-middleware en StoreActivityRequest laten nu toevallig dezelfde mensen door,
+     * dus met een reiziger valt dat niet te zien. Daarom een policy die alles weigert:
+     * dan moet ook update() weigeren.
+     */
     public function test_updating_an_activity_goes_through_the_activity_policy(): void
     {
         Gate::policy(Activity::class, DenyEverythingPolicy::class);

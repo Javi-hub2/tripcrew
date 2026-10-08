@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Trip;
+use App\Models\TripDay;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -14,14 +15,9 @@ class TravelerProgramController extends Controller
     {
         $this->authorize('view', $trip);
 
-        // Gekozen dag, of standaard vandaag, of anders de eerste dag van de reis.
-        $day = $tripDay
-            ? $trip->days()->findOrFail($tripDay)
-            : ($trip->days()->whereDate('date', now()->toDateString())->first() ?? $trip->days()->first());
-
         return view('traveler.dashboard', [
             'trip' => $trip,
-            'day' => $day,
+            'day' => $this->selectedDay($trip, $tripDay),
         ]);
     }
 
@@ -29,9 +25,7 @@ class TravelerProgramController extends Controller
     {
         $this->authorize('view', $trip);
 
-        $day = $tripDay
-            ? $trip->days()->findOrFail($tripDay)
-            : ($trip->days()->whereDate('date', now()->toDateString())->first() ?? $trip->days()->first());
+        $day = $this->selectedDay($trip, $tripDay);
 
         $activities = $day
             ? $day->activities()->withCount('choices')->get()
@@ -45,5 +39,13 @@ class TravelerProgramController extends Controller
             'activities' => $activities,
             'myChoiceActivityIds' => $myChoiceActivityIds,
         ]);
+    }
+
+    /** Gekozen dag, of standaard vandaag, of anders de eerste dag van de reis. */
+    private function selectedDay(Trip $trip, $tripDay): ?TripDay
+    {
+        return $tripDay
+            ? $trip->days()->findOrFail($tripDay)
+            : ($trip->days()->whereDate('date', now()->toDateString())->first() ?? $trip->days()->first());
     }
 }
